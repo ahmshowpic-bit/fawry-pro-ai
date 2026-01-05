@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fawry Pro Cloud - AHMED SAYED</title>
+    <title>Fawry Pro V2.6 - النسخة الصارمة</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -14,96 +14,119 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: white; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(51, 65, 85, 0.5); }
-        .card-stat { transition: all 0.3s ease; }
-        .card-stat:active { transform: scale(0.95); }
-        .loader { border-top-color: #3b82f6; animation: spinner 1.5s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: white; direction: rtl; }
+        .glass { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .card-display { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 1.5rem; }
+        
+        /* حل نهائي لمشكلة اختفاء النصوص في القوائم */
+        select.swal2-select {
+            background-color: #1e293b !important;
+            color: white !important;
+            font-family: 'Cairo', sans-serif !important;
+            font-size: 14px !important;
+            border: 1px solid #3b82f6 !important;
+        }
+        .swal2-popup {
+            background: #1e293b !important;
+            color: white !important;
+            border-radius: 20px !important;
+            border: 1px solid #334155 !important;
+        }
+        .swal2-title, .swal2-content { color: white !important; }
+        
+        .btn-action { transition: all 0.2s; cursor: pointer; }
+        .btn-action:active { transform: scale(0.95); }
+        
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen pb-24">
+<body class="min-h-screen pb-32">
 
     <div id="loading-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center">
-        <div class="loader w-12 h-12 border-4 border-slate-700 rounded-full mb-4"></div>
-        <p class="text-blue-400 animate-pulse text-sm">جاري الاتصال بالسحاب...</p>
+        <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-blue-400 font-bold animate-pulse">جاري المزامنة مع السحاب...</p>
     </div>
 
-    <header class="glass sticky top-0 z-50 p-4 shadow-2xl border-b border-slate-700">
-        <div class="container mx-auto flex justify-between items-center">
+    <header class="glass sticky top-0 z-50 p-4 border-b border-slate-700 shadow-2xl">
+        <div class="container mx-auto flex justify-between items-center max-w-xl">
             <div>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                    <i class="fas fa-cloud ml-2"></i>FAWRY PRO CLOUD
-                </h1>
-                <p class="text-[10px] text-slate-400">تزامن حي: <span id="sync-status" class="text-emerald-500">متصل</span></p>
+                <h1 class="text-xl font-bold tracking-tight">FAWRY PRO <span class="text-blue-500">V2.6</span></h1>
+                <p id="conn-status" class="text-[10px] text-emerald-500 font-bold">● نظام حسابي صارم</p>
             </div>
-            <button onclick="openSettings()" class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-slate-400"><i class="fas fa-cog"></i></button>
+            <div class="flex gap-2">
+                <button onclick="showEditMenu()" class="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/30 btn-action">
+                    <i class="fas fa-edit ml-1"></i> تعديل
+                </button>
+                <button onclick="openSettings()" class="bg-slate-800 text-slate-400 p-2.5 rounded-xl border border-slate-700 btn-action">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 mt-6 max-w-xl">
         
         <div class="grid grid-cols-2 gap-3 mb-6">
-            <div onclick="updateValue('capital', 'رأس المال الثابت')" class="glass p-4 rounded-2xl col-span-2 card-stat cursor-pointer text-center border-blue-500/20">
-                <p class="text-slate-400 text-xs mb-1">💎 رأس المال الكلي</p>
-                <h2 id="cap-val" class="text-2xl font-black text-white">0</h2>
+            <div class="card-display p-6 col-span-2 text-center border-blue-500/30 shadow-2xl">
+                <p class="text-slate-500 text-xs mb-1 font-bold">💎 رأس المال الثابت</p>
+                <h2 id="cap-val" class="text-3xl font-black text-white">0</h2>
             </div>
             
-            <div onclick="updateValue('digital', 'المسطر الرئيسي')" class="glass p-4 rounded-2xl card-stat cursor-pointer border-indigo-500/20">
-                <p class="text-blue-400 text-xs mb-1"><i class="fas fa-server ml-1"></i>المسطر</p>
+            <div class="card-display p-4 border-indigo-500/30">
+                <p class="text-indigo-400 text-[10px] mb-1 font-bold">🖥️ المسطر الرئيسي</p>
                 <h2 id="dig-val" class="text-lg font-bold">0</h2>
             </div>
             
-            <div onclick="manageWallets()" class="glass p-4 rounded-2xl card-stat cursor-pointer border-pink-500/20">
-                <p class="text-pink-400 text-xs mb-1"><i class="fas fa-mobile-alt ml-1"></i>المحافظ</p>
+            <div class="card-display p-4 border-pink-500/30">
+                <p class="text-pink-400 text-[10px] mb-1 font-bold">📱 إجمالي المحافظ</p>
                 <h2 id="wal-val" class="text-lg font-bold">0</h2>
             </div>
 
-            <div onclick="updateValue('cash', 'رصيد الدرج')" class="glass p-4 rounded-2xl col-span-2 card-stat cursor-pointer border-emerald-500/20">
-                <p class="text-emerald-400 text-xs mb-1 text-center"><i class="fas fa-money-bill-wave ml-1"></i>الدرج (كاش)</p>
-                <h2 id="cash-val" class="text-xl font-bold text-center">0</h2>
+            <div class="card-display p-4 col-span-2 text-center border-emerald-500/30">
+                <p class="text-emerald-400 text-[10px] mb-1 font-bold">💵 رصيد الدرج (كاش)</p>
+                <h2 id="cash-val" class="text-xl font-bold">0</h2>
             </div>
         </div>
 
-        <div id="status-bar" class="mb-6 p-3 rounded-xl text-center text-sm font-bold shadow-lg transition-all">
-            جاري المزامنة...
+        <div id="status-bar" class="mb-6 p-4 rounded-2xl text-center text-xs font-bold transition-all border shadow-lg">
+            فحص الحسابات...
         </div>
 
-        <div class="flex justify-between items-center mb-4 px-2">
-            <span class="text-slate-400 text-xs">إجمالي مديونية التجار:</span>
-            <span id="debt-val" class="text-rose-400 font-bold">0 ج.م</span>
+        <div class="flex justify-between items-center px-2 mb-6">
+            <span class="text-slate-500 text-xs font-bold">إجمالي ديون التجار:</span>
+            <span id="debt-val" class="text-rose-400 font-black text-sm">0 ج.م</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-8">
-            <button onclick="actionLiquidate()" class="bg-indigo-600 hover:bg-indigo-500 p-3 rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-900/20">
-                <i class="fas fa-sync ml-1"></i>تسييل للمحل
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <button onclick="actionLiquidate()" class="bg-indigo-600 hover:bg-indigo-500 p-4 rounded-2xl text-xs font-bold shadow-lg btn-action">
+                <i class="fas fa-exchange-alt ml-2"></i> تسييل للمحل
             </button>
-            <button onclick="actionDeposit()" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-xl text-xs font-bold transition-all">
-                <i class="fas fa-arrow-up ml-1"></i>إيداع للمسطر
+            <button onclick="actionDeposit()" class="bg-slate-700 hover:bg-slate-600 p-4 rounded-2xl text-xs font-bold border border-slate-600 btn-action">
+                <i class="fas fa-arrow-up ml-2"></i> إيداع للمسطر
             </button>
         </div>
 
-        <div class="relative mb-4">
-            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-            <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="ابحث عن تاجر..." 
-            class="w-full bg-slate-800/50 border border-slate-700 p-3 rounded-xl pr-10 focus:outline-none focus:border-blue-500 text-sm">
+        <div class="relative mb-5">
+            <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="🔍 ابحث عن تاجر..." 
+            class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-sm shadow-inner">
         </div>
 
-        <div id="merchant-list" class="space-y-3 min-h-[100px]"></div>
+        <div id="merchant-list" class="space-y-4 min-h-[100px]"></div>
 
     </main>
 
-    <div class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-slate-700 flex gap-3 max-w-xl mx-auto shadow-2xl">
-        <button onclick="addNewMerchant()" class="flex-[2] bg-blue-600 hover:bg-blue-500 p-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-900/40">
-            <i class="fas fa-plus-circle ml-2"></i>تاجر جديد
+    <div class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-slate-700 flex gap-3 max-w-xl mx-auto rounded-t-[2.5rem] shadow-2xl">
+        <button onclick="addNewMerchant()" class="flex-[2] bg-blue-600 hover:bg-blue-500 p-4 rounded-2xl font-bold text-sm shadow-xl btn-action">
+            <i class="fas fa-plus-circle ml-2"></i> إضافة تاجر جديد
         </button>
-        <button onclick="actionWithdraw()" class="flex-1 bg-rose-900/40 hover:bg-rose-900/60 text-rose-400 border border-rose-800/50 p-3 rounded-xl font-bold text-sm transition-all">
+        <button onclick="actionWithdraw()" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 p-4 rounded-2xl font-bold text-sm btn-action">
             سحب مصاريف
         </button>
     </div>
 
     <script>
-        // --- 1. Firebase Configuration ---
+        // --- Firebase Config (بياناتك الأصلية) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCgRyVx_JeXlEPYFA1Ca-rw6h7EEUWlwqk",
             authDomain: "device-streaming-25b7975f.firebaseapp.com",
@@ -114,11 +137,9 @@
             appId: "1:673681845910:web:5091f297bfe91ab1bf1cb7"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const dbRef = firebase.database().ref('fawry_v2_data');
+        const dbRef = firebase.database().ref('fawry_v26_final_secure');
 
-        // --- 2. State & Variables ---
         let db = {
             capital: 0,
             digital: 0,
@@ -127,233 +148,205 @@
             merchants: {}
         };
 
-        // --- 3. Core Functions ---
-
-        // Listen for Real-time Updates
-        dbRef.on('value', (snapshot) => {
+        // --- المزامنة ---
+        dbRef.on('value', (snap) => {
             document.getElementById('loading-screen').classList.add('hidden');
-            const data = snapshot.val();
+            const data = snap.val();
             if (data) {
                 db = data;
-                // Ensure wallets and merchants exist to prevent crashes
                 if (!db.wallets) db.wallets = { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "وي باي": 0 };
                 if (!db.merchants) db.merchants = {};
                 refreshUI();
-            } else {
-                // First time setup
-                saveToCloud();
-            }
+            } else { save(); }
         });
 
-        function saveToCloud() {
-            dbRef.set(db).catch(err => {
-                Swal.fire('خطأ مزامنة', err.message, 'error');
-            });
-        }
+        function save() { dbRef.set(db); }
 
+        // --- الواجهة والحسابات ---
         function refreshUI() {
-            const totalWallets = Object.values(db.wallets).reduce((a, b) => a + (Number(b) || 0), 0);
-            const totalDebt = Object.values(db.merchants).reduce((a, b) => a + (Number(b.debt) || 0), 0);
-            const actualTotal = db.digital + db.cash + totalWallets + totalDebt;
-            const diff = actualTotal - db.capital;
+            const totalW = Object.values(db.wallets).reduce((a, b) => a + (Number(b) || 0), 0);
+            const totalD = Object.values(db.merchants || {}).reduce((a, b) => a + (Number(b.debt) || 0), 0);
+            const actual = db.digital + db.cash + totalW + totalD;
+            const diff = actual - db.capital;
 
-            document.getElementById('cap-val').innerText = Number(db.capital).toLocaleString();
+            document.getElementById('cap-val').innerText = Number(db.capital).toLocaleString() + ' ج.م';
             document.getElementById('dig-val').innerText = Number(db.digital).toLocaleString();
-            document.getElementById('wal-val').innerText = Number(totalWallets).toLocaleString();
+            document.getElementById('wal-val').innerText = Number(totalW).toLocaleString();
             document.getElementById('cash-val').innerText = Number(db.cash).toLocaleString();
-            document.getElementById('debt-val').innerText = Number(totalDebt).toLocaleString() + ' ج.م';
+            document.getElementById('debt-val').innerText = totalD.toLocaleString() + ' ج.م';
 
-            const status = document.getElementById('status-bar');
+            const bar = document.getElementById('status-bar');
             if (Math.abs(diff) < 1) {
-                status.innerText = "الميزانية متزنة تماماً ✅";
-                status.className = "mb-6 p-3 rounded-xl text-center text-sm font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                bar.innerText = "الميزانية متزنة تماماً ✅";
+                bar.className = "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
             } else {
-                status.innerText = `الفارق: ${diff.toLocaleString()} ج.م`;
-                status.className = diff > 0 
-                    ? "mb-6 p-3 rounded-xl text-center text-sm font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                    : "mb-6 p-3 rounded-xl text-center text-sm font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                bar.innerText = diff > 0 ? `أرباح / زيادة: +${diff.toLocaleString()} ج.م` : `عجز / مسحوبات: ${diff.toLocaleString()} ج.م`;
+                bar.className = diff > 0 ? "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-blue-500/10 text-blue-400 border-blue-500/20" 
+                                         : "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-rose-500/10 text-rose-400 border-rose-500/20";
             }
             renderMerchants();
         }
 
         function renderMerchants() {
-            const container = document.getElementById('merchant-list');
-            const query = document.getElementById('merchantSearch').value.toLowerCase();
-            container.innerHTML = '';
-
-            const sortedKeys = Object.keys(db.merchants).sort((a, b) => db.merchants[b].debt - db.merchants[a].debt);
-
-            sortedKeys.forEach(name => {
-                if (name.toLowerCase().includes(query)) {
+            const list = document.getElementById('merchant-list');
+            const search = document.getElementById('merchantSearch').value.toLowerCase();
+            list.innerHTML = '';
+            const keys = Object.keys(db.merchants || {}).sort((a,b) => db.merchants[b].debt - db.merchants[a].debt);
+            keys.forEach(name => {
+                if (name.toLowerCase().includes(search)) {
                     const m = db.merchants[name];
                     const div = document.createElement('div');
-                    div.className = "glass p-4 rounded-2xl flex items-center justify-between shadow-sm border-slate-700/50";
+                    div.className = "card-display p-4 flex items-center justify-between shadow-sm";
                     div.innerHTML = `
-                        <button onclick="merchantAction('${name}', 'collect')" class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all"><i class="fas fa-plus"></i></button>
-                        <div class="flex-1 text-center cursor-pointer" onclick="viewHistory('${name}')">
-                            <h3 class="text-sm font-bold">${name}</h3>
-                            <p class="text-rose-400 text-xs mt-1 font-bold">${Number(m.debt).toLocaleString()} ج.م</p>
+                        <button onclick="merchantAction('${name}', 'collect')" class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all btn-action"><i class="fas fa-plus"></i></button>
+                        <div class="text-center flex-1 cursor-pointer" onclick="viewHistory('${name}')">
+                            <h4 class="text-[13px] font-bold">${name}</h4>
+                            <p class="text-rose-400 font-black text-[13px] mt-1">${m.debt.toLocaleString()}</p>
                         </div>
-                        <button onclick="merchantAction('${name}', 'send')" class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><i class="fas fa-minus"></i></button>
+                        <button onclick="merchantAction('${name}', 'send')" class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all btn-action"><i class="fas fa-minus"></i></button>
                     `;
-                    container.appendChild(div);
+                    list.appendChild(div);
                 }
             });
         }
 
-        // --- 4. Interactive Logic ---
+        // --- وظائف النظام الصارم ---
 
-        async function updateValue(key, title) {
-            const { value: val } = await Swal.fire({ 
-                title, 
-                input: 'number', 
-                inputValue: db[key], 
-                background: '#1e293b', color: '#fff', confirmButtonColor: '#3b82f6'
+        function getFullOptions(withDigital = false) {
+            let options = { 'cash': 'الدرج (كاش)' };
+            if (withDigital) options['digital'] = 'المسطر الرئيسي';
+            for (let w in db.wallets) { options[w] = w; }
+            return options;
+        }
+
+        async function showEditMenu() {
+            const { value: mode } = await Swal.fire({
+                title: 'تعديل البيانات',
+                input: 'select',
+                inputOptions: { 'cap': 'رأس المال', 'dig': 'المسطر', 'cash': 'الدرج', 'wal': 'المحافظ' },
+                confirmButtonText: 'تعديل'
             });
-            if (val !== null && val !== "") { 
-                db[key] = parseFloat(val); 
-                saveToCloud(); 
-            }
+            if (mode === 'cap') editVal('capital', 'رأس المال');
+            else if (mode === 'dig') editVal('digital', 'المسطر');
+            else if (mode === 'cash') editVal('cash', 'الدرج');
+            else if (mode === 'wal') manageWallets();
+        }
+
+        async function editVal(key, label) {
+            const { value: n } = await Swal.fire({ title: `تعديل ${label}`, input: 'number', inputValue: db[key] });
+            if (n !== null && n !== "") { db[key] = parseFloat(n); save(); }
         }
 
         async function manageWallets() {
-            const { value: walletName } = await Swal.fire({
-                title: 'اختر المحفظة',
-                input: 'select',
-                inputOptions: Object.keys(db.wallets).reduce((a, v) => ({ ...a, [v]: v }), {}),
-                background: '#1e293b', color: '#fff'
-            });
-            if (walletName) {
-                const { value: newVal } = await Swal.fire({ title: `رصيد ${walletName}`, input: 'number', inputValue: db.wallets[walletName], background: '#1e293b', color: '#fff' });
-                if (newVal !== null) { 
-                    db.wallets[walletName] = parseFloat(newVal); 
-                    saveToCloud(); 
-                }
+            const { value: w } = await Swal.fire({ title: 'اختر المحفظة', input: 'select', inputOptions: Object.keys(db.wallets).reduce((a,v)=>({...a,[v]:v}),{}) });
+            if (w) {
+                const { value: v } = await Swal.fire({ title: `رصيد ${w}`, input: 'number', inputValue: db.wallets[w] });
+                if (v !== null) { db.wallets[w] = parseFloat(v); save(); }
             }
         }
 
         async function addNewMerchant() {
-            const { value: name } = await Swal.fire({ title: 'اسم التاجر', input: 'text', background: '#1e293b', color: '#fff' });
-            if (name) {
-                if (db.merchants[name]) return Swal.fire('تنبيه', 'التاجر موجود بالفعل', 'warning');
-                db.merchants[name] = { debt: 0, history: [] };
-                saveToCloud();
-            }
+            const { value: n } = await Swal.fire({ title: 'اسم التاجر الجديد', input: 'text' });
+            if (n) { if (db.merchants[n]) return; db.merchants[n] = { debt: 0, history: [] }; save(); refreshUI(); }
         }
 
         async function merchantAction(name, type) {
             const isSend = type === 'send';
-            const { value: amount } = await Swal.fire({
-                title: isSend ? `إرسال إلى ${name}` : `تحصيل من ${name}`,
-                input: 'number',
-                background: '#1e293b', color: '#fff'
-            });
+            const { value: amt } = await Swal.fire({ title: isSend ? `إرسال لـ ${name}` : `تحصيل من ${name}`, input: 'number' });
+            if (!amt || amt <= 0) return;
+            const val = parseFloat(amt);
 
-            if (!amount || amount <= 0) return;
-            const amt = parseFloat(amount);
-
-            let sourceOrDest = '';
             if (isSend) {
-                const { value: src } = await Swal.fire({
-                    title: 'خصم من',
-                    input: 'select',
-                    inputOptions: { 'digital': 'المسطر', ...db.wallets },
-                    background: '#1e293b', color: '#fff'
-                });
+                const { value: src } = await Swal.fire({ title: 'خصم من', input: 'select', inputOptions: getFullOptions(true) });
                 if (!src) return;
-                sourceOrDest = src;
-                if (src === 'digital') { db.digital -= amt; } 
-                else { db.wallets[src] -= amt; }
-                db.merchants[name].debt += amt;
-            } else {
-                const { value: dst } = await Swal.fire({
-                    title: 'إضافة إلى',
-                    input: 'select',
-                    inputOptions: { 'cash': 'الدرج', ...db.wallets },
-                    background: '#1e293b', color: '#fff'
-                });
-                if (!dst) return;
-                sourceOrDest = dst;
-                if (dst === 'cash') { db.cash += amt; } 
-                else { db.wallets[dst] += amt; }
-                db.merchants[name].debt -= amt;
-            }
+                
+                // فحص الرصيد الصارم
+                let balance = (src === 'digital') ? db.digital : (src === 'cash') ? db.cash : db.wallets[src];
+                if (balance < val) return Swal.fire('خطأ', 'الرصيد في المصدر لا يكفي!', 'error');
 
-            if (!db.merchants[name].history) db.merchants[name].history = [];
-            db.merchants[name].history.push({
-                type: isSend ? 'إرسال' : 'تحصيل',
-                amount: amt,
-                via: sourceOrDest,
-                date: new Date().toLocaleString('ar-EG')
-            });
-            saveToCloud();
+                if (src === 'digital') db.digital -= val; else if (src === 'cash') db.cash -= val; else db.wallets[src] -= val;
+                db.merchants[name].debt += val;
+                log(name, `إرسال (${src})`, val);
+            } else {
+                const { value: dst } = await Swal.fire({ title: 'استلام في', input: 'select', inputOptions: getFullOptions() });
+                if (!dst) return;
+                
+                if (dst === 'cash') db.cash += val; else db.wallets[dst] += val;
+                db.merchants[name].debt -= val;
+                log(name, `تحصيل (${dst})`, val);
+            }
+            save();
         }
 
         async function actionLiquidate() {
-            const { value: wallet } = await Swal.fire({ title: 'تسييل من محفظة', input: 'select', inputOptions: db.wallets, background: '#1e293b', color: '#fff' });
-            if (!wallet) return;
-            const { value: amount } = await Swal.fire({ title: 'المبلغ المستلم كاش', input: 'number', background: '#1e293b', color: '#fff' });
-            const { value: fee } = await Swal.fire({ title: 'المصاريف/العمولة', input: 'number', inputValue: 0, background: '#1e293b', color: '#fff' });
-            if (amount) {
-                const total = parseFloat(amount) + parseFloat(fee || 0);
-                db.wallets[wallet] -= total;
-                db.cash += parseFloat(amount);
-                saveToCloud();
-            }
+            const { value: w } = await Swal.fire({ title: 'تسييل من محفظة', input: 'select', inputOptions: db.wallets });
+            if (!w) return;
+            const { value: a } = await Swal.fire({ title: 'المبلغ الواصل للدرج', input: 'number' });
+            if (!a) return;
+            const { value: f } = await Swal.fire({ title: 'العمولة / الفرق', input: 'number', inputValue: 0 });
+            
+            const total = parseFloat(a) + parseFloat(f || 0);
+            if (db.wallets[w] < total) return Swal.fire('خطأ', 'رصيد المحفظة لا يكفي!', 'error');
+            
+            db.wallets[w] -= total;
+            db.cash += parseFloat(a);
+            save();
         }
 
         async function actionDeposit() {
-            const { value: amount } = await Swal.fire({ title: 'إيداع للمسطر من الكاش', input: 'number', background: '#1e293b', color: '#fff' });
-            if (amount) {
-                const amt = parseFloat(amount);
-                db.cash -= amt;
-                db.digital += amt;
-                saveToCloud();
-            }
+            // إيداع للمسطر من (الدرج أو أي محفظة)
+            const { value: src } = await Swal.fire({ title: 'إيداع للمسطر من', input: 'select', inputOptions: getFullOptions() });
+            if (!src) return;
+            const { value: a } = await Swal.fire({ title: 'مبلغ الإيداع', input: 'number' });
+            if (!a || a <= 0) return;
+            const val = parseFloat(a);
+
+            let balance = (src === 'cash') ? db.cash : db.wallets[src];
+            if (balance < val) return Swal.fire('خطأ', 'الرصيد لا يكفي للإيداع!', 'error');
+
+            if (src === 'cash') db.cash -= val; else db.wallets[src] -= val;
+            db.digital += val;
+            save();
         }
 
         async function actionWithdraw() {
-            const { value: amount } = await Swal.fire({ title: 'سحب مصاريف شخصية', input: 'number', background: '#1e293b', color: '#fff' });
-            if (amount) {
-                db.cash -= parseFloat(amount);
-                saveToCloud();
-            }
+            // سحب مصاريف من (الدرج، المسطر، أو المحافظ)
+            const { value: src } = await Swal.fire({ title: 'سحب مصاريف من', input: 'select', inputOptions: getFullOptions(true) });
+            if (!src) return;
+            const { value: a } = await Swal.fire({ title: 'المبلغ المسحوب', input: 'number' });
+            if (!a || a <= 0) return;
+            const val = parseFloat(a);
+
+            let balance = (src === 'digital') ? db.digital : (src === 'cash') ? db.cash : db.wallets[src];
+            if (balance < val) return Swal.fire('تنبيه', 'الرصيد لا يكفي لسحب هذا المبلغ!', 'error');
+
+            if (src === 'digital') db.digital -= val; else if (src === 'cash') db.cash -= val; else db.wallets[src] -= val;
+            save();
         }
 
-        function viewHistory(name) {
-            const history = db.merchants[name].history || [];
+        function log(n, t, a) {
+            if (!db.merchants[n].history) db.merchants[n].history = [];
+            db.merchants[n].history.push({ t, a, d: new Date().toLocaleString('ar-EG') });
+        }
+
+        function viewHistory(n) {
+            let h = db.merchants[n].history || [];
             let html = '<div class="space-y-2 max-h-60 overflow-y-auto">';
-            history.slice().reverse().forEach(h => {
-                html += `<div class="p-2 border-b border-slate-700 text-right text-xs">
-                    <span class="${h.type==='إرسال'?'text-rose-400':'text-emerald-400'} font-bold">${h.type}</span> | 
-                    <b>${h.amount}</b> عبر ${h.via}
-                    <div class="text-[10px] text-slate-500 mt-1">${h.date}</div>
+            h.slice().reverse().forEach(x => {
+                html += `<div class="p-2 border-b border-slate-700 text-right text-[10px] flex justify-between">
+                    <span class="text-slate-500">${x.d}</span> <span class="font-bold">${x.t}: ${x.a.toLocaleString()}</span>
                 </div>`;
             });
-            if (history.length === 0) html += '<p class="text-center py-4 text-slate-500">لا توجد عمليات مسجلة</p>';
-            html += '</div>';
-            Swal.fire({ title: `سجل ${name}`, html, background: '#1e293b', color: '#fff' });
+            Swal.fire({ title: `سجل ${n}`, html });
         }
 
         async function openSettings() {
-            const { value: action } = await Swal.fire({
-                title: 'الإعدادات',
-                input: 'select',
-                inputOptions: { 'del': 'حذف تاجر', 'reset': 'إعادة ضبط شاملة' },
-                background: '#1e293b', color: '#fff'
-            });
-            if (action === 'del') {
-                const { value: mName } = await Swal.fire({ title: 'اختر التاجر', input: 'select', inputOptions: Object.keys(db.merchants).reduce((a,v)=>({...a,[v]:v}),{}), background: '#1e293b', color: '#fff' });
-                if (mName) {
-                    const { value: pass } = await Swal.fire({ title: 'كلمة السر', input: 'password', background: '#1e293b', color: '#fff' });
-                    if (pass === '1234') { delete db.merchants[mName]; saveToCloud(); }
-                }
-            } else if (action === 'reset') {
-                const { value: pass } = await Swal.fire({ title: 'تأكيد الحذف الشامل', input: 'password', background: '#1e293b', color: '#fff' });
-                if (pass === '1234') { 
-                    db = { capital: 0, digital: 0, cash: 0, wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "وي باي": 0 }, merchants: {} };
-                    saveToCloud(); 
-                }
+            const { value: opt } = await Swal.fire({ title: 'الإعدادات', input: 'select', inputOptions: { 'del': 'حذف تاجر', 'reset': 'تصفير شامل' } });
+            if (opt === 'del') {
+                const { value: m } = await Swal.fire({ title: 'حذف تاجر', input: 'select', inputOptions: Object.keys(db.merchants || {}).reduce((a,v)=>({...a,[v]:v}),{}) });
+                if (m) { const { value: p } = await Swal.fire({ title: 'كلمة السر', input: 'password' }); if (p === '1234') { delete db.merchants[m]; save(); } }
+            } else if (opt === 'reset') {
+                const { value: p } = await Swal.fire({ title: 'تأكيد التصفير', input: 'password' }); if (p === '1234') { db = { capital:0, digital:0, cash:0, wallets:{"فودافون":0,"اتصالات":0,"أورانج":0,"وي باي":0}, merchants:{} }; save(); }
             }
         }
     </script>
