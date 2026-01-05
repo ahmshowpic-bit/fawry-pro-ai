@@ -125,7 +125,6 @@
     </div>
 
     <script>
-        // --- Firebase Config (نفس بياناتك الأصلية) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCgRyVx_JeXlEPYFA1Ca-rw6h7EEUWlwqk",
             authDomain: "device-streaming-25b7975f.firebaseapp.com",
@@ -145,30 +144,34 @@
             merchants: {}
         };
 
-        // --- المزامنة ---
         dbRef.on('value', (snap) => {
             document.getElementById('loading-screen').classList.add('hidden');
             const data = snap.val();
             if (data) {
                 db = data;
                 if (!db.wallets) db.wallets = { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "وي باي": 0 };
+                if (!db.merchants) db.merchants = {}; // تأمين: التأكد من وجود كائن التجار
                 refreshUI();
-            } else { save(); }
+            } else { 
+                save(); 
+            }
         });
 
-        function save() { dbRef.set(db).then(() => { refreshUI(); }); }
+        function save() { 
+            return dbRef.set(db).then(() => { refreshUI(); }); 
+        }
 
         function refreshUI() {
-            const totalW = Object.values(db.wallets).reduce((a, b) => a + (Number(b) || 0), 0);
+            const totalW = Object.values(db.wallets || {}).reduce((a, b) => a + (Number(b) || 0), 0);
             const totalD = Object.values(db.merchants || {}).reduce((a, b) => a + (Number(b.debt) || 0), 0);
-            const actual = db.digital + db.cash + totalW + totalD;
-            const diff = actual - db.capital;
+            const actual = (Number(db.digital) || 0) + (Number(db.cash) || 0) + totalW + totalD;
+            const diff = actual - (Number(db.capital) || 0);
 
-            document.getElementById('cap-val').innerText = Number(db.capital).toLocaleString() + ' ج.م';
-            document.getElementById('dig-val').innerText = Number(db.digital).toLocaleString();
-            document.getElementById('wal-val').innerText = Number(totalW).toLocaleString();
-            document.getElementById('cash-val').innerText = Number(db.cash).toLocaleString();
-            document.getElementById('debt-val').innerText = totalD.toLocaleString() + ' ج.م';
+            document.getElementById('cap-val').innerText = Number(db.capital || 0).toLocaleString() + ' ج.م';
+            document.getElementById('dig-val').innerText = Number(db.digital || 0).toLocaleString();
+            document.getElementById('wal-val').innerText = Number(totalW || 0).toLocaleString();
+            document.getElementById('cash-val').innerText = Number(db.cash || 0).toLocaleString();
+            document.getElementById('debt-val').innerText = (totalD || 0).toLocaleString() + ' ج.م';
 
             const bar = document.getElementById('status-bar');
             if (Math.abs(diff) < 1) {
@@ -182,7 +185,6 @@
             renderMerchants();
         }
 
-        // --- وظيفة تفاصيل المحافظ الجديدة ---
         function showWalletDetails() {
             let html = '<div class="space-y-3 py-2">';
             for (let w in db.wallets) {
@@ -206,10 +208,13 @@
             const list = document.getElementById('merchant-list');
             const search = document.getElementById('merchantSearch').value.toLowerCase();
             list.innerHTML = '';
-            const keys = Object.keys(db.merchants || {}).sort((a,b) => db.merchants[b].debt - db.merchants[a].debt);
+            
+            const merchantsObj = db.merchants || {};
+            const keys = Object.keys(merchantsObj).sort((a,b) => (merchantsObj[b].debt || 0) - (merchantsObj[a].debt || 0));
+            
             keys.forEach(name => {
                 if (name.toLowerCase().includes(search)) {
-                    const m = db.merchants[name];
+                    const m = merchantsObj[name];
                     const div = document.createElement('div');
                     div.className = "card-display p-4 flex items-center justify-between shadow-sm";
                     div.innerHTML = `
@@ -224,8 +229,6 @@
                 }
             });
         }
-
-        // --- وظائف النظام ---
 
         function getOptions(mode) {
             let opts = {};
@@ -278,7 +281,9 @@
             const { value: n } = await Swal.fire({ title: 'إضافة تاجر جديد', input: 'text', inputPlaceholder: 'اسم التاجر' });
             if (n) {
                 let name = n.trim();
+                if (!db.merchants) db.merchants = {}; // الإصلاح: إنشاء الكائن إذا كان مفقوداً
                 if (db.merchants[name]) return Swal.fire('خطأ', 'التاجر موجود بالفعل', 'error');
+                
                 db.merchants[name] = { debt: 0, history: [] };
                 save();
             }
@@ -364,11 +369,9 @@
             if (opt === 'del') {
                 const { value: m } = await Swal.fire({ title: 'حذف تاجر', input: 'select', inputOptions: Object.keys(db.merchants || {}).reduce((a,v)=>({...a,[v]:v}),{}) });
                 if (m) {
-                    // --- ميزة منع الحذف لمن عليهم ديون ---
                     if (db.merchants[m].debt > 0) {
                         return Swal.fire('فشل الحذف', `لا يمكن حذف التاجر (${m}) لأن عليه مديونية قدرها ${db.merchants[m].debt} ج.م. يجب تصفير الحساب أولاً.`, 'error');
                     }
-
                     const { value: p } = await Swal.fire({ title: 'كلمة السر للحذف', input: 'password' });
                     if (p === '1234') { delete db.merchants[m]; save(); }
                     else { Swal.fire('خطأ', 'كلمة السر غير صحيحة', 'error'); }
@@ -378,4 +381,3 @@
     </script>
 </body>
 </html>
-
