@@ -83,7 +83,7 @@
             </div>
 
             <div class="card-display p-4 col-span-2 text-center border-emerald-500/30 shadow-lg">
-                <p class="text-emerald-400 text-[10px] mb-1 font-bold">💵 رصيد الدرج (كاش)</p>
+                <p class="text-emerald-400 text-[10px] mb-1 font-bold">💵 رصيد الدرج (نقدي)</p>
                 <h2 id="cash-val" class="text-xl font-bold">0</h2>
             </div>
         </div>
@@ -94,7 +94,7 @@
 
         <div class="grid grid-cols-2 gap-4 mb-8">
             <button onclick="actionLiquidate()" class="bg-indigo-600 hover:bg-indigo-500 p-4 rounded-2xl text-xs font-bold shadow-lg btn-action">
-                <i class="fas fa-sync-alt ml-2"></i> تسييل للمحل
+                <i class="fas fa-sync-alt ml-2"></i> تسييل للدرج
             </button>
             <button onclick="actionDeposit()" class="bg-slate-700 hover:bg-slate-600 p-4 rounded-2xl text-xs font-bold border border-slate-600 btn-action">
                 <i class="fas fa-arrow-up ml-2"></i> إيداع للمسطر
@@ -140,7 +140,7 @@
 
         let db = {
             capital: 0, digital: 0, cash: 0,
-            wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "وي باي": 0 },
+            wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 },
             merchants: {}
         };
 
@@ -149,8 +149,8 @@
             const data = snap.val();
             if (data) {
                 db = data;
-                if (!db.wallets) db.wallets = { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "وي باي": 0 };
-                if (!db.merchants) db.merchants = {}; // تأمين: التأكد من وجود كائن التجار
+                if (!db.wallets) db.wallets = { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 };
+                if (!db.merchants) db.merchants = {};
                 refreshUI();
             } else { 
                 save(); 
@@ -175,7 +175,7 @@
 
             const bar = document.getElementById('status-bar');
             if (Math.abs(diff) < 1) {
-                bar.innerText = "الميزانية متزنة تماماً ✅";
+                bar.innerText = "الجرد صحيح تماماً ✅";
                 bar.className = "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
             } else {
                 bar.innerText = diff > 0 ? `أرباح / زيادة: +${diff.toLocaleString()} ج.م` : `عجز / مسحوبات: ${diff.toLocaleString()} ج.م`;
@@ -234,17 +234,17 @@
             let opts = {};
             if (mode === 'send') {
                 opts['digital'] = '🖥️ المسطر الرئيسي';
-                opts['cash'] = '💵 الدرج (كاش)';
+                opts['cash'] = '💵 الدرج (نقدي)';
                 for (let w in db.wallets) opts[w] = `📱 ${w}`;
             } else if (mode === 'collect') {
-                opts['cash'] = '💵 الدرج (كاش)';
+                opts['cash'] = '💵 الدرج (نقدي)';
                 for (let w in db.wallets) opts[w] = `📱 ${w}`;
                 opts['digital'] = '🖥️ المسطر الرئيسي';
             } else if (mode === 'deposit') {
-                opts['cash'] = '💵 الدرج (كاش)';
+                opts['cash'] = '💵 الدرج (نقدي)';
                 for (let w in db.wallets) opts[w] = `📱 ${w}`;
             } else {
-                opts['cash'] = '💵 الدرج (كاش)';
+                opts['cash'] = '💵 الدرج (نقدي)';
                 opts['digital'] = '🖥️ المسطر الرئيسي';
                 for (let w in db.wallets) opts[w] = `📱 ${w}`;
             }
@@ -260,7 +260,7 @@
             });
             if (mode === 'cap') editVal('capital', 'رأس المال');
             else if (mode === 'dig') editVal('digital', 'المسطر');
-            else if (mode === 'cash') editVal('cash', 'الدرج');
+            else if (mode === 'cash') editVal('cash', 'النقدي');
             else if (mode === 'wal') manageWallets();
         }
 
@@ -281,7 +281,7 @@
             const { value: n } = await Swal.fire({ title: 'إضافة تاجر جديد', input: 'text', inputPlaceholder: 'اسم التاجر' });
             if (n) {
                 let name = n.trim();
-                if (!db.merchants) db.merchants = {}; // الإصلاح: إنشاء الكائن إذا كان مفقوداً
+                if (!db.merchants) db.merchants = {};
                 if (db.merchants[name]) return Swal.fire('خطأ', 'التاجر موجود بالفعل', 'error');
                 
                 db.merchants[name] = { debt: 0, history: [] };
@@ -314,14 +314,43 @@
         }
 
         async function actionLiquidate() {
-            const { value: w } = await Swal.fire({ title: 'تسييل من محفظة', input: 'select', inputOptions: db.wallets });
+            // جلب أسماء المحافظ بشكل صحيح
+            const walletOptions = Object.keys(db.wallets).reduce((a, v) => ({ ...a, [v]: v }), {});
+            
+            const { value: w } = await Swal.fire({ 
+                title: 'تسييل من محفظة', 
+                input: 'select', 
+                inputOptions: walletOptions,
+                inputPlaceholder: 'اختر المحفظة' 
+            });
             if (!w) return;
-            const { value: a } = await Swal.fire({ title: 'المبلغ المستلم كاش', input: 'number' });
-            const { value: f } = await Swal.fire({ title: 'العمولة / الفرق', input: 'number', inputValue: 0 });
-            if (!a) return;
-            const total = parseFloat(a) + parseFloat(f || 0);
-            if (db.wallets[w] < total) return Swal.fire('خطأ', 'رصيد المحفظة لا يكفي!', 'error');
-            db.wallets[w] -= total; db.cash += parseFloat(a); save();
+
+            const { value: a } = await Swal.fire({ 
+                title: 'المبلغ المستلم كاش', 
+                input: 'number',
+                inputPlaceholder: 'أدخل المبلغ' 
+            });
+            if (!a || a <= 0) return;
+
+            const { value: f } = await Swal.fire({ 
+                title: 'العمولة / الفرق', 
+                input: 'number', 
+                inputValue: 0,
+                inputPlaceholder: 'العمولة المخصومة من المحفظة' 
+            });
+            
+            const cashVal = parseFloat(a);
+            const feeVal = parseFloat(f || 0);
+            const totalToDeduct = cashVal + feeVal;
+
+            if (db.wallets[w] < totalToDeduct) {
+                return Swal.fire('خطأ', 'رصيد المحفظة لا يكفي لتغطية المبلغ والعمولة!', 'error');
+            }
+
+            db.wallets[w] -= totalToDeduct; // يخصم الإجمالي من المحفظة
+            db.cash += cashVal;            // يضاف الصافي فقط للدرج
+            
+            save();
         }
 
         async function actionDeposit() {
