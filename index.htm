@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fawry Pro V4.4 - Secured</title>
+    <title>Fawry Pro V4.5 - True Offline</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -22,12 +22,10 @@
         .btn-main { background: #2563eb; color: white; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; text-align: center; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.5); }
         .btn-danger { background: rgba(225, 29, 72, 0.1); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.2); }
         
-        /* تخصيص النوافذ المنبثقة */
         .swal2-popup { background: #1e293b !important; color: white !important; border-radius: 20px !important; border: 1px solid #334155; font-family: 'Cairo' !important; }
         .swal2-input, .swal2-select { background: #0f172a !important; color: white !important; border: 1px solid #334155 !important; border-radius: 10px !important; margin: 10px auto !important; width: 85% !important; }
         .hidden { display: none !important; }
         
-        /* شريط التقدم للذاكرة */
         .progress-bar-bg { width: 100%; background: #334155; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
         .progress-bar-fill { height: 100%; background: #10b981; width: 0%; transition: width 0.5s; }
     </style>
@@ -84,7 +82,7 @@
 
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="actionLiquidate()" class="btn-main bg-indigo-600 hover:bg-indigo-500">
-                    <i class="fas fa-sync-alt block text-lg mb-1"></i> سحب للدرج
+                    <i class="fas fa-sync-alt block text-lg mb-1"></i> تسييل (بيع)
                 </button>
                 <button onclick="actionDeposit()" class="btn-main bg-slate-700 hover:bg-slate-600 border border-slate-600">
                     <i class="fas fa-arrow-up block text-lg mb-1"></i> إيداع مسطر
@@ -118,7 +116,6 @@
     </div>
 
     <script>
-        // إعدادات الاتصال
         const firebaseConfig = {
             apiKey: "AIzaSyBYn1Hd1QLGwwnDAKqqrS7M2ICpGlTaF9o",
             authDomain: "my-fawry-app.firebaseapp.com",
@@ -139,7 +136,6 @@
         let db = { capital: 0, digital: 0, cash: 0, wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 }, merchants: {} };
         let isOnline = false;
 
-        // 1. الدخول
         function login() {
             const p = document.getElementById('password').value;
             const msg = document.getElementById('login-msg');
@@ -161,7 +157,6 @@
             }
         });
 
-        // 2. النظام
         function initSystem() {
             const local = localStorage.getItem(LOCAL_KEY);
             if(local) { try { db = JSON.parse(local); updateUI(); } catch(e){} }
@@ -225,7 +220,6 @@
 
         function num(n) { return Number(n || 0).toLocaleString(); }
 
-        // --- القوائم والعمليات ---
         function getWalletOptions() { const opts = {}; for (let w in db.wallets) opts[w] = w; return opts; }
         function getFullOptions(mode) {
             const wallets = {}; for(let w in db.wallets) wallets[w] = `📱 ${w}`;
@@ -357,29 +351,40 @@
                 const { value: m } = await Swal.fire({ title: 'اختر التاجر للحذف', input: 'select', inputOptions: opts });
                 if(m) {
                     if(db.merchants[m].debt > 0) return Swal.fire('خطأ', 'لا يمكن حذف تاجر عليه مديونية!', 'error');
-                    const { value: p } = await Swal.fire({ title: 'كلمة السر', input: 'password' });
+                    const { value: p } = await Swal.fire({ title: 'كلمة السر (1234)', input: 'password' });
                     if(p === '1234') { delete db.merchants[m]; save(); Swal.fire('تم الحذف', '', 'success'); } else Swal.fire('كلمة السر خطأ');
                 }
             } else if(o === 'logout') { auth.signOut(); }
         }
 
-        // --- نظام التشخيص المتقدم (مؤمن بكلمة مرور) ---
+        // --- نظام التشخيص المحسن (Non-Blocking / Offline First) ---
         async function runDiagnostics() {
-            Swal.fire({ title: 'جاري فحص النظام...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            Swal.fire({ title: 'جاري فحص النظام...', didOpen: () => { Swal.showLoading(); } });
 
-            // 1. اختبار استجابة السيرفر (Ping Test)
-            let ping = 'غير متصل';
+            // 1. فحص الاتصال (Ping) مع مهلة زمنية 3 ثواني
+            let ping = 'غير متصل (Local Mode)';
             let pingColor = 'text-rose-500';
+            
+            // إنشاء "وعد" يفشل بعد 3 ثواني
+            const timeout = new Promise((_, reject) => setTimeout(() => reject("Timeout"), 3000));
+            // محاولة الكتابة في السيرفر
+            const testWrite = dbRef.child('_diagnostics_ping').set(Date.now());
+
             try {
                 const start = Date.now();
-                await dbRef.child('_diagnostics_ping').set(start);
+                // السباق: أيهما ينتهي أولاً (الكتابة أم المهلة)
+                await Promise.race([testWrite, timeout]);
                 const end = Date.now();
                 const latency = end - start;
                 ping = `${latency} ms`;
-                pingColor = latency < 200 ? 'text-emerald-400' : 'text-yellow-400';
-            } catch (e) { console.error(e); }
+                pingColor = 'text-emerald-400';
+            } catch (e) {
+                // إذا فشل الاتصال أو انتهى الوقت، نعتبره أوفلاين ونكمل عادي
+                ping = "وضع أوفلاين (مخزن محلياً)";
+                pingColor = 'text-orange-400';
+            }
 
-            // 2. حساب حجم التخزين المحلي
+            // 2. حساب الذاكرة المحلية (يعمل دائماً)
             let totalBytes = 0;
             for(let x in localStorage) { if(localStorage.hasOwnProperty(x)) totalBytes += ((localStorage[x].length + x.length) * 2); }
             const usedKB = (totalBytes / 1024).toFixed(2);
@@ -388,7 +393,7 @@
             const html = `
                 <div class="text-right space-y-4 text-sm">
                     <div class="flex justify-between border-b border-slate-700 pb-2">
-                        <span>📡 استجابة السيرفر (Ping):</span>
+                        <span>📡 حالة السيرفر:</span>
                         <span class="${pingColor} font-bold" dir="ltr">${ping}</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-700 pb-2">
@@ -405,27 +410,25 @@
                 title: 'تقرير حالة النظام',
                 html: html,
                 showCancelButton: true,
-                confirmButtonText: '🧹 تنظيف الذاكرة وتحديث البيانات',
+                confirmButtonText: '🧹 تنظيف الذاكرة',
                 confirmButtonColor: '#fb7185',
                 cancelButtonText: 'إغلاق'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    // طلب كلمة مرور للحماية
                     const { value: pass } = await Swal.fire({
                         title: 'حماية النظام',
-                        text: 'تحذير: هذا الإجراء سيمسح البيانات المحلية. إذا لم يكن هناك إنترنت ستفقد البيانات!',
+                        text: 'تحذير: سيتم مسح البيانات المحلية! تأكد من وجود نسخة احتياطية أو اتصال بالنت.',
                         input: 'password',
-                        inputPlaceholder: 'أدخل كلمة المرور',
+                        inputPlaceholder: 'أدخل كلمة المرور (12345)',
                         showCancelButton: true,
-                        confirmButtonText: 'تأكيد الحذف',
-                        cancelButtonText: 'إلغاء'
+                        confirmButtonText: 'تأكيد الحذف'
                     });
 
                     if (pass === '12345') {
                         localStorage.removeItem(LOCAL_KEY);
                         location.reload();
                     } else if (pass) {
-                        Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
+                        Swal.fire('خطأ', 'كلمة السر غير صحيحة', 'error');
                     }
                 }
             });
