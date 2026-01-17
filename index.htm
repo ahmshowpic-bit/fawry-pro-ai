@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fawry Pro V4.0</title>
+    <title>Fawry Pro V4.4 - Secured</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -22,10 +22,14 @@
         .btn-main { background: #2563eb; color: white; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; text-align: center; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.5); }
         .btn-danger { background: rgba(225, 29, 72, 0.1); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.2); }
         
-        /* SweetAlert Customization */
+        /* تخصيص النوافذ المنبثقة */
         .swal2-popup { background: #1e293b !important; color: white !important; border-radius: 20px !important; border: 1px solid #334155; font-family: 'Cairo' !important; }
         .swal2-input, .swal2-select { background: #0f172a !important; color: white !important; border: 1px solid #334155 !important; border-radius: 10px !important; margin: 10px auto !important; width: 85% !important; }
         .hidden { display: none !important; }
+        
+        /* شريط التقدم للذاكرة */
+        .progress-bar-bg { width: 100%; background: #334155; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { height: 100%; background: #10b981; width: 0%; transition: width 0.5s; }
     </style>
 </head>
 <body class="min-h-screen pb-32">
@@ -42,7 +46,7 @@
         <header class="glass sticky top-0 z-40 p-4 shadow-lg">
             <div class="container mx-auto max-w-md flex justify-between items-center">
                 <div>
-                    <h1 class="text-lg font-bold">AHMED<span class="text-blue-500">PRO</span></h1>
+                    <h1 class="text-lg font-bold">AHMED<span class="text-blue-500">SAYED</span></h1>
                     <div id="conn-status" class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
                         <span class="w-2 h-2 rounded-full bg-slate-600"></span> جاري التحميل...
                     </div>
@@ -76,11 +80,11 @@
                 </div>
             </div>
 
-            <div id="status-bar" class="hidden p-3 rounded-xl text-center text-xs font-bold"></div>
+            <div id="status-bar" class="p-3 rounded-xl text-center text-xs font-bold hidden"></div>
 
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="actionLiquidate()" class="btn-main bg-indigo-600 hover:bg-indigo-500">
-                    <i class="fas fa-sync-alt block text-lg mb-1"></i> تسييل (بيع)
+                    <i class="fas fa-sync-alt block text-lg mb-1"></i> سحب للدرج
                 </button>
                 <button onclick="actionDeposit()" class="btn-main bg-slate-700 hover:bg-slate-600 border border-slate-600">
                     <i class="fas fa-arrow-up block text-lg mb-1"></i> إيداع مسطر
@@ -133,6 +137,7 @@
         const LOCAL_KEY = 'fawry_v4_data';
 
         let db = { capital: 0, digital: 0, cash: 0, wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 }, merchants: {} };
+        let isOnline = false;
 
         // 1. الدخول
         function login() {
@@ -158,11 +163,9 @@
 
         // 2. النظام
         function initSystem() {
-            // تحميل محلي سريع
             const local = localStorage.getItem(LOCAL_KEY);
             if(local) { try { db = JSON.parse(local); updateUI(); } catch(e){} }
 
-            // اتصال مباشر
             dbRef.on('value', snap => {
                 const val = snap.val();
                 if(val) {
@@ -176,7 +179,8 @@
 
             connectedRef.on("value", snap => {
                 const el = document.getElementById('conn-status');
-                if(snap.val()===true) {
+                isOnline = snap.val();
+                if(isOnline === true) {
                     el.innerHTML='<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> متصل';
                     el.classList.replace('text-slate-400', 'text-emerald-400');
                 } else {
@@ -193,80 +197,55 @@
         }
 
         function updateUI() {
-            // تحديث الأرقام
             document.getElementById('cap-val').innerText = num(db.capital);
             document.getElementById('dig-val').innerText = num(db.digital);
-            
             const totalWallets = Object.values(db.wallets||{}).reduce((a,b)=>a+Number(b),0);
             document.getElementById('wal-val').innerText = num(totalWallets);
-            
             document.getElementById('cash-val').innerText = num(db.cash);
-            
             const totalDebt = Object.values(db.merchants||{}).reduce((a,b)=>a+Number(b.debt),0);
             document.getElementById('debt-val').innerText = num(totalDebt);
 
-            // فحص الجرد
             const actual = Number(db.digital) + Number(db.cash) + totalWallets + totalDebt;
             const diff = actual - Number(db.capital);
             const bar = document.getElementById('status-bar');
+            bar.classList.remove('hidden'); 
             
             if (Math.abs(diff) > 1) {
-                bar.classList.remove('hidden');
                 bar.className = diff > 0 
                     ? "p-3 rounded-xl text-center text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20"
                     : "p-3 rounded-xl text-center text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
                 bar.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${diff > 0 ? 'زيادة' : 'عجز'}: ${num(Math.abs(diff))} ج.م`;
             } else {
-                bar.classList.add('hidden'); // إخفاء الشريط إذا كان الجرد سليماً
+                bar.className = "p-3 rounded-xl text-center text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                bar.innerHTML = `<i class="fas fa-check-circle"></i> الجرد مظبوط 100%`;
             }
-
             renderMerchants();
             checkNotifications();
         }
 
-        // دالة مساعدة لتنسيق الأرقام
         function num(n) { return Number(n || 0).toLocaleString(); }
 
-        // --- القوائم المنسدلة الذكية ---
-        function getWalletOptions() {
-            // تحويل كائن المحافظ إلى قائمة خيارات لـ SweetAlert
-            const opts = {};
-            for (let w in db.wallets) opts[w] = w;
-            return opts;
-        }
-
+        // --- القوائم والعمليات ---
+        function getWalletOptions() { const opts = {}; for (let w in db.wallets) opts[w] = w; return opts; }
         function getFullOptions(mode) {
-            const wallets = {};
-            for(let w in db.wallets) wallets[w] = `📱 ${w}`;
-            
+            const wallets = {}; for(let w in db.wallets) wallets[w] = `📱 ${w}`;
             if(mode === 'send') return { 'digital': '🖥️ المسطر', 'cash': '💵 الكاش', ...wallets };
             if(mode === 'collect') return { 'cash': '💵 الكاش', ...wallets, 'digital': '🖥️ المسطر' };
             if(mode === 'deposit') return { 'cash': '💵 من الكاش', ...wallets };
             return { 'cash': '💵 من الكاش', 'digital': '🖥️ من المسطر', ...wallets };
         }
 
-        // --- العمليات ---
         async function actionLiquidate() {
             const wOpts = getWalletOptions();
             if(Object.keys(wOpts).length === 0) return Swal.fire('تنبيه', 'لا توجد محافظ!', 'warning');
-
             const { value: w } = await Swal.fire({ title: 'تسييل من', input: 'select', inputOptions: wOpts });
             if (!w) return;
-            
             const { value: a } = await Swal.fire({ title: 'الكاش المستلم', input: 'number' });
             if (!a) return;
-            
             const { value: f } = await Swal.fire({ title: 'عمولة خصم', input: 'number', inputValue: 0 });
-            
             const total = parseFloat(a) + parseFloat(f||0);
             if(db.wallets[w] < total) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
-
-            if(await confirm(`تسييل ${a} من ${w}؟`)) {
-                db.wallets[w] -= total;
-                db.cash += parseFloat(a);
-                save();
-                Swal.fire('تم التسييل', '', 'success');
-            }
+            if(await confirm(`تسييل ${a} من ${w}؟`)) { db.wallets[w] -= total; db.cash += parseFloat(a); save(); Swal.fire('تم', '', 'success'); }
         }
 
         async function actionDeposit() {
@@ -274,17 +253,10 @@
             if(!src) return;
             const { value: amt } = await Swal.fire({ title: 'المبلغ', input: 'number' });
             if(!amt) return;
-            
             const v = parseFloat(amt);
             const bal = src === 'cash' ? db.cash : db.wallets[src];
             if(bal < v) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
-
-            if(await confirm('تأكيد الإيداع؟')) {
-                if(src === 'cash') db.cash -= v; else db.wallets[src] -= v;
-                db.digital += v;
-                save();
-                Swal.fire('تم', '', 'success');
-            }
+            if(await confirm('تأكيد الإيداع؟')) { if(src === 'cash') db.cash -= v; else db.wallets[src] -= v; db.digital += v; save(); Swal.fire('تم', '', 'success'); }
         }
 
         async function merchantAction(name, type) {
@@ -292,53 +264,32 @@
             const { value: amt } = await Swal.fire({ title: isSend ? `إرسال لـ ${name}` : `تحصيل من ${name}`, input: 'number' });
             if(!amt) return;
             const v = parseFloat(amt);
-
             const { value: src } = await Swal.fire({ title: isSend ? 'خصم من' : 'إيداع في', input: 'select', inputOptions: getFullOptions(isSend ? 'send' : 'collect') });
             if(!src) return;
-
-            // التحقق من الرصيد
             if(isSend) {
                 let bal = src === 'digital' ? db.digital : (src === 'cash' ? db.cash : db.wallets[src]);
                 if(bal < v) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
             }
-
             if(await confirm('هل أنت متأكد؟')) {
                 if(isSend) {
                     if(src === 'digital') db.digital -= v; else if(src === 'cash') db.cash -= v; else db.wallets[src] -= v;
-                    db.merchants[name].debt += v;
-                    log(name, `إرسال (${src})`, v);
+                    db.merchants[name].debt += v; log(name, `إرسال (${src})`, v);
                 } else {
                     if(src === 'digital') db.digital += v; else if(src === 'cash') db.cash += v; else db.wallets[src] += v;
-                    db.merchants[name].debt -= v;
-                    log(name, `تحصيل (${src})`, v);
+                    db.merchants[name].debt -= v; log(name, `تحصيل (${src})`, v);
                 }
-                db.merchants[name].lastUpdate = Date.now();
-                save();
-                Swal.fire('تم', '', 'success');
+                db.merchants[name].lastUpdate = Date.now(); save(); Swal.fire('تم', '', 'success');
             }
         }
 
-        // --- أدوات ---
         async function addNewMerchant() {
             const { value: n } = await Swal.fire({ title: 'اسم التاجر الجديد', input: 'text' });
-            if(n && !db.merchants[n.trim()]) {
-                db.merchants[n.trim()] = { debt: 0, history: [], lastUpdate: Date.now() };
-                save();
-                Swal.fire('تمت الإضافة', '', 'success');
-            }
+            if(n && !db.merchants[n.trim()]) { db.merchants[n.trim()] = { debt: 0, history: [], lastUpdate: Date.now() }; save(); Swal.fire('تمت الإضافة', '', 'success'); }
         }
 
         async function showEditMenu() {
-            const { value: mode } = await Swal.fire({
-                title: 'تعديل الأرصدة',
-                input: 'select',
-                inputOptions: { 'cap': '💎 رأس المال', 'dig': '🖥️ المسطر', 'cash': '💵 النقدية', 'wal': '📱 المحافظ' }
-            });
-
-            if(mode === 'cap') editVal('capital');
-            else if(mode === 'dig') editVal('digital');
-            else if(mode === 'cash') editVal('cash');
-            else if(mode === 'wal') editWallets();
+            const { value: mode } = await Swal.fire({ title: 'تعديل الأرصدة', input: 'select', inputOptions: { 'cap': '💎 رأس المال', 'dig': '🖥️ المسطر', 'cash': '💵 النقدية', 'wal': '📱 المحافظ' } });
+            if(mode === 'cap') editVal('capital'); else if(mode === 'dig') editVal('digital'); else if(mode === 'cash') editVal('cash'); else if(mode === 'wal') editWallets();
         }
 
         async function editVal(key) {
@@ -347,11 +298,8 @@
         }
 
         async function editWallets() {
-            const opts = getWalletOptions();
-            opts['NEW'] = '+ إضافة محفظة جديدة';
-            
+            const opts = getWalletOptions(); opts['NEW'] = '+ إضافة محفظة جديدة';
             const { value: w } = await Swal.fire({ title: 'اختر المحفظة', input: 'select', inputOptions: opts });
-            
             if(w === 'NEW') {
                 const { value: nm } = await Swal.fire({ title: 'اسم المحفظة', input: 'text' });
                 if(nm) { db.wallets[nm] = 0; save(); }
@@ -364,20 +312,17 @@
         function showWalletDetails() {
             let h = '<div class="text-right space-y-2">';
             for(let w in db.wallets) h += `<div class="flex justify-between border-b border-slate-700 pb-1"><span>${w}</span><span class="font-bold">${num(db.wallets[w])}</span></div>`;
-            h += '</div>';
-            Swal.fire({ title: 'تفاصيل المحافظ', html: h });
+            h += '</div>'; Swal.fire({ title: 'تفاصيل المحافظ', html: h });
         }
 
         function renderMerchants() {
             const list = document.getElementById('merchant-list');
             const search = document.getElementById('merchantSearch').value.toLowerCase();
             list.innerHTML = '';
-            
             Object.keys(db.merchants).sort((a,b) => db.merchants[b].debt - db.merchants[a].debt).forEach(name => {
                 if(name.toLowerCase().includes(search)) {
                     const m = db.merchants[name];
                     const isLate = (Date.now() - (m.lastUpdate || 0)) > (5 * 86400000) && m.debt > 0;
-                    
                     list.innerHTML += `
                     <div class="card flex justify-between items-center p-3 ${isLate ? 'border-rose-500/30 bg-rose-900/10' : ''}">
                         <button onclick="merchantAction('${name}','collect')" class="bg-emerald-500/10 text-emerald-500 w-10 h-10 rounded-lg"><i class="fas fa-plus"></i></button>
@@ -394,33 +339,96 @@
         function checkNotifications() {
             const late = Object.values(db.merchants).filter(m => m.debt > 0 && (Date.now() - (m.lastUpdate || 0) > 432000000)).length;
             const btn = document.getElementById('notify-btn');
-            if(late > 0) {
-                btn.classList.remove('hidden');
-                btn.innerHTML = `<i class="fas fa-bell animate-bounce"></i>`;
-                btn.onclick = () => Swal.fire('تنبيه', `يوجد ${late} تجار متأخرين في السداد لأكثر من 5 أيام`, 'warning');
-            } else {
-                btn.classList.add('hidden');
-            }
+            if(late > 0) { btn.classList.remove('hidden'); btn.innerHTML = `<i class="fas fa-bell animate-bounce"></i>`; btn.onclick = () => Swal.fire('تنبيه', `يوجد ${late} تجار متأخرين`, 'warning'); } else { btn.classList.add('hidden'); }
         }
 
         async function openSettings() {
-            const { value: o } = await Swal.fire({ title: 'الإعدادات', input: 'select', inputOptions: { 'bk': '📥 تصدير نسخة', 'rs': '📤 استعادة نسخة', 'logout': '🚪 خروج' } });
-            if(o === 'bk') {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([JSON.stringify(db)], {type: 'application/json'}));
-                a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
-            } else if(o === 'rs') {
-                const i = document.createElement('input'); i.type = 'file';
-                i.onchange = e => { 
-                    const r = new FileReader(); 
-                    r.onload = ev => { db = JSON.parse(ev.target.result); save(); Swal.fire('تم'); }; 
-                    r.readAsText(e.target.files[0]); 
-                };
-                i.click();
-            } else if(o === 'logout') {
-                auth.signOut();
-            }
+            const { value: o } = await Swal.fire({ 
+                title: 'الإعدادات', 
+                input: 'select', 
+                inputOptions: { 'diag': '🛠️ فحص وصيانة النظام', 'bk': '📥 تصدير نسخة', 'rs': '📤 استعادة نسخة', 'del': '🗑️ حذف تاجر', 'logout': '🚪 خروج' } 
+            });
+            
+            if(o === 'diag') runDiagnostics();
+            else if(o === 'bk') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(db)], {type: 'application/json'})); a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+            else if(o === 'rs') { const i = document.createElement('input'); i.type = 'file'; i.onchange = e => { const r = new FileReader(); r.onload = ev => { db = JSON.parse(ev.target.result); save(); Swal.fire('تم'); }; r.readAsText(e.target.files[0]); }; i.click(); }
+            else if(o === 'del') {
+                const opts = {}; Object.keys(db.merchants).forEach(m => opts[m] = m);
+                const { value: m } = await Swal.fire({ title: 'اختر التاجر للحذف', input: 'select', inputOptions: opts });
+                if(m) {
+                    if(db.merchants[m].debt > 0) return Swal.fire('خطأ', 'لا يمكن حذف تاجر عليه مديونية!', 'error');
+                    const { value: p } = await Swal.fire({ title: 'كلمة السر', input: 'password' });
+                    if(p === '1234') { delete db.merchants[m]; save(); Swal.fire('تم الحذف', '', 'success'); } else Swal.fire('كلمة السر خطأ');
+                }
+            } else if(o === 'logout') { auth.signOut(); }
+        }
+
+        // --- نظام التشخيص المتقدم (مؤمن بكلمة مرور) ---
+        async function runDiagnostics() {
+            Swal.fire({ title: 'جاري فحص النظام...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+            // 1. اختبار استجابة السيرفر (Ping Test)
+            let ping = 'غير متصل';
+            let pingColor = 'text-rose-500';
+            try {
+                const start = Date.now();
+                await dbRef.child('_diagnostics_ping').set(start);
+                const end = Date.now();
+                const latency = end - start;
+                ping = `${latency} ms`;
+                pingColor = latency < 200 ? 'text-emerald-400' : 'text-yellow-400';
+            } catch (e) { console.error(e); }
+
+            // 2. حساب حجم التخزين المحلي
+            let totalBytes = 0;
+            for(let x in localStorage) { if(localStorage.hasOwnProperty(x)) totalBytes += ((localStorage[x].length + x.length) * 2); }
+            const usedKB = (totalBytes / 1024).toFixed(2);
+            const percent = Math.min((totalBytes / (5 * 1024 * 1024)) * 100, 100).toFixed(1);
+
+            const html = `
+                <div class="text-right space-y-4 text-sm">
+                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                        <span>📡 استجابة السيرفر (Ping):</span>
+                        <span class="${pingColor} font-bold" dir="ltr">${ping}</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-700 pb-2">
+                        <span>💾 الذاكرة المستخدمة:</span>
+                        <span class="text-blue-400 font-bold" dir="ltr">${usedKB} KB</span>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>الحد الأقصى</span><span>${percent}%</span></div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percent}%"></div></div>
+                    </div>
+                </div>`;
+
+            Swal.fire({
+                title: 'تقرير حالة النظام',
+                html: html,
+                showCancelButton: true,
+                confirmButtonText: '🧹 تنظيف الذاكرة وتحديث البيانات',
+                confirmButtonColor: '#fb7185',
+                cancelButtonText: 'إغلاق'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    // طلب كلمة مرور للحماية
+                    const { value: pass } = await Swal.fire({
+                        title: 'حماية النظام',
+                        text: 'تحذير: هذا الإجراء سيمسح البيانات المحلية. إذا لم يكن هناك إنترنت ستفقد البيانات!',
+                        input: 'password',
+                        inputPlaceholder: 'أدخل كلمة المرور',
+                        showCancelButton: true,
+                        confirmButtonText: 'تأكيد الحذف',
+                        cancelButtonText: 'إلغاء'
+                    });
+
+                    if (pass === '12345') {
+                        localStorage.removeItem(LOCAL_KEY);
+                        location.reload();
+                    } else if (pass) {
+                        Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
+                    }
+                }
+            });
         }
 
         async function actionWithdraw() {
@@ -428,19 +436,12 @@
             if(!s) return;
             const { value: a } = await Swal.fire({ input: 'number' });
             if(!a) return;
-            
-            if(await confirm('تأكيد السحب؟')) {
-                const v = parseFloat(a);
-                if(s === 'cash') db.cash -= v; else if(s === 'digital') db.digital -= v; else db.wallets[s] -= v;
-                save(); Swal.fire('تم');
-            }
+            if(await confirm('تأكيد السحب؟')) { const v = parseFloat(a); if(s === 'cash') db.cash -= v; else if(s === 'digital') db.digital -= v; else db.wallets[s] -= v; save(); Swal.fire('تم'); }
         }
 
         function viewHistory(n) {
             let h = '<div class="max-h-60 overflow-y-auto space-y-2 text-xs">';
-            (db.merchants[n].history || []).slice().reverse().forEach(x => {
-                h += `<div class="flex justify-between border-b border-slate-700 pb-1"><span>${x.t} (${num(x.a)})</span><span class="text-slate-500">${x.d.split(',')[0]}</span></div>`;
-            });
+            (db.merchants[n].history || []).slice().reverse().forEach(x => { h += `<div class="flex justify-between border-b border-slate-700 pb-1"><span>${x.t} (${num(x.a)})</span><span class="text-slate-500">${x.d.split(',')[0]}</span></div>`; });
             Swal.fire({ title: `سجل ${n}`, html: h + '</div>' });
         }
 
@@ -454,4 +455,3 @@
     </script>
 </body>
 </html>
-
