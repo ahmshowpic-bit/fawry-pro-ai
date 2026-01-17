@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fawry Pro V2.6 - Advanced Secure Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fawry Pro V2.7 - My Private App</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -14,50 +14,54 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: white; direction: rtl; }
+        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: white; direction: rtl; -webkit-tap-highlight-color: transparent; }
         .glass { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .card-display { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 1.5rem; }
+        .card-display { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(51, 65, 85, 0.7); border-radius: 1.5rem; transition: transform 0.2s; }
+        .card-display:active { transform: scale(0.98); }
         
-        .swal2-select {
+        .swal2-select, .swal2-input {
             background-color: #1e293b !important;
             color: #ffffff !important;
             border: 2px solid #3b82f6 !important;
             border-radius: 12px !important;
             padding: 10px !important;
-            min-height: 55px !important;
+            font-family: 'Cairo', sans-serif !important;
         }
         .swal2-popup {
             background: #1e293b !important;
             color: white !important;
             border-radius: 25px !important;
             border: 1px solid #334155 !important;
+            font-family: 'Cairo', sans-serif !important;
         }
         
-        .btn-action { transition: all 0.2s; cursor: pointer; }
+        .btn-action { transition: all 0.2s; cursor: pointer; user-select: none; }
         .btn-action:active { transform: scale(0.95); }
         
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen pb-32">
+<body class="min-h-screen pb-32 select-none">
 
-    <div id="loading-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center">
+    <div id="loading-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center transition-opacity duration-500">
         <div class="w-14 h-14 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-blue-400 font-bold animate-pulse text-sm">جاري الاتصال...</p>
+        <p class="text-blue-400 font-bold animate-pulse text-sm">جاري تهيئة النظام...</p>
     </div>
 
     <header class="glass sticky top-0 z-50 p-4 border-b border-slate-700 shadow-2xl">
         <div class="container mx-auto flex justify-between items-center max-w-xl">
             <div>
-                <h1 class="text-xl font-bold tracking-tight">AHMED PRO <span class="text-blue-500">V26.0</span></h1>
-                <p class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest italic">متصل</p>
+                <h1 class="text-xl font-bold tracking-tight">AHMED PRO <span class="text-emerald-400">V2.7</span></h1>
+                <p id="conn-status" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-slate-500"></span> جاري التحقق...
+                </p>
             </div>
             <div class="flex gap-2">
                 <button onclick="showEditMenu()" class="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/30 btn-action">
                     <i class="fas fa-edit ml-1"></i> تعديل
                 </button>
-                <button onclick="openSettings()" class="bg-slate-800 text-slate-400 p-2.5 rounded-xl border border-slate-700 btn-action">
+                <button onclick="openSettings()" class="bg-slate-800 text-slate-400 p-2.5 rounded-xl border border-slate-700 btn-action relative">
                     <i class="fas fa-cog"></i>
                 </button>
             </div>
@@ -67,9 +71,9 @@
     <main class="container mx-auto px-4 mt-6 max-w-xl">
         
         <div class="grid grid-cols-2 gap-3 mb-6">
-            <div class="card-display p-6 col-span-2 text-center border-blue-500/30 shadow-2xl">
+            <div class="card-display p-6 col-span-2 text-center border-blue-500/30 shadow-2xl bg-gradient-to-b from-slate-800 to-slate-900">
                 <p class="text-slate-500 text-xs mb-1 font-bold">💎 رأس المال الكلي (الثابت)</p>
-                <h2 id="cap-val" class="text-3xl font-black text-white">0</h2>
+                <h2 id="cap-val" class="text-3xl font-black text-white tracking-wider">0</h2>
             </div>
             
             <div class="card-display p-4 border-indigo-500/30 shadow-lg">
@@ -84,40 +88,41 @@
 
             <div class="card-display p-4 col-span-2 text-center border-emerald-500/30 shadow-lg">
                 <p class="text-emerald-400 text-[10px] mb-1 font-bold">💵 رصيد الدرج (نقدي)</p>
-                <h2 id="cash-val" class="text-xl font-bold">0</h2>
+                <h2 id="cash-val" class="text-2xl font-bold">0</h2>
             </div>
         </div>
 
-        <div id="status-bar" class="mb-6 p-4 rounded-2xl text-center text-xs font-bold transition-all border shadow-lg">
+        <div id="status-bar" class="mb-6 p-4 rounded-2xl text-center text-xs font-bold transition-all border shadow-lg bg-slate-800 border-slate-700">
             فحص الحسابات...
         </div>
 
         <div class="grid grid-cols-2 gap-4 mb-8">
-            <button onclick="actionLiquidate()" class="bg-indigo-600 hover:bg-indigo-500 p-4 rounded-2xl text-xs font-bold shadow-lg btn-action">
-                <i class="fas fa-sync-alt ml-2"></i> تسييل للدرج
+            <button onclick="actionLiquidate()" class="bg-gradient-to-r from-indigo-700 to-indigo-600 hover:from-indigo-600 hover:to-indigo-500 p-4 rounded-2xl text-xs font-bold shadow-lg btn-action text-white">
+                <i class="fas fa-sync-alt ml-2 text-lg block mb-1"></i> تسييل للدرج
             </button>
-            <button onclick="actionDeposit()" class="bg-slate-700 hover:bg-slate-600 p-4 rounded-2xl text-xs font-bold border border-slate-600 btn-action">
-                <i class="fas fa-arrow-up ml-2"></i> إيداع للمسطر
+            <button onclick="actionDeposit()" class="bg-slate-700 hover:bg-slate-600 p-4 rounded-2xl text-xs font-bold border border-slate-600 btn-action text-slate-200">
+                <i class="fas fa-arrow-up ml-2 text-lg block mb-1"></i> إيداع للمسطر
             </button>
         </div>
 
         <div class="flex justify-between items-center px-2 mb-4">
-            <span class="text-slate-500 text-xs font-bold">مديونية التجار الحالية:</span>
+            <span class="text-slate-500 text-xs font-bold">مديونية التجار:</span>
             <span id="debt-val" class="text-rose-400 font-black text-sm">0 ج.م</span>
         </div>
 
         <div class="relative mb-5">
-            <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="🔍 ابحث عن تاجر..." 
-            class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-sm shadow-inner">
+            <i class="fas fa-search absolute left-4 top-4 text-slate-500"></i>
+            <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="بحث عن تاجر..." 
+            class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl focus:outline-none focus:border-blue-500 text-sm shadow-inner pl-10 text-right">
         </div>
 
-        <div id="merchant-list" class="space-y-4 min-h-[100px] mb-20"></div>
+        <div id="merchant-list" class="space-y-3 min-h-[100px] mb-24 pb-10"></div>
 
     </main>
 
-    <div class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-slate-700 flex gap-3 max-w-xl mx-auto rounded-t-[2.5rem] shadow-2xl">
-        <button onclick="addNewMerchant()" class="flex-[2] bg-blue-600 hover:bg-blue-500 p-4 rounded-2xl font-bold text-sm shadow-xl btn-action">
-            <i class="fas fa-user-plus ml-2"></i> إضافة تاجر جديد
+    <div class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-slate-700 flex gap-3 max-w-xl mx-auto rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-40">
+        <button onclick="addNewMerchant()" class="flex-[2] bg-blue-600 hover:bg-blue-500 p-4 rounded-2xl font-bold text-sm shadow-xl btn-action text-white">
+            <i class="fas fa-user-plus ml-2"></i> إضافة تاجر
         </button>
         <button onclick="actionWithdraw()" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 p-4 rounded-2xl font-bold text-sm btn-action">
             سحب مصاريف
@@ -125,41 +130,96 @@
     </div>
 
     <script>
+        // ============================================
+        // 1. إعدادات المشروع الخاص بك (تم التحديث)
+        // ============================================
         const firebaseConfig = {
-            apiKey: "AIzaSyCgRyVx_JeXlEPYFA1Ca-rw6h7EEUWlwqk",
-            authDomain: "device-streaming-25b7975f.firebaseapp.com",
-            databaseURL: "https://device-streaming-25b7975f-default-rtdb.firebaseio.com",
-            projectId: "device-streaming-25b7975f",
-            storageBucket: "device-streaming-25b7975f.firebasestorage.app",
-            messagingSenderId: "673681845910",
-            appId: "1:673681845910:web:5091f297bfe91ab1bf1cb7"
+            apiKey: "AIzaSyBYn1Hd1QLGwwnDAKqqrS7M2ICpGlTaF9o",
+            authDomain: "my-fawry-app.firebaseapp.com",
+            databaseURL: "https://my-fawry-app-default-rtdb.firebaseio.com",
+            projectId: "my-fawry-app",
+            storageBucket: "my-fawry-app.firebasestorage.app",
+            messagingSenderId: "1020579238724",
+            appId: "1:1020579238724:web:ae8fd20b630e05857e7d11"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const dbRef = firebase.database().ref('fawry_v26_secure_strict_final');
+        // تهيئة Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        // نقطة الاتصال بقاعدة البيانات
+        const dbRef = firebase.database().ref('fawry_v27_data');
+        const connectedRef = firebase.database().ref(".info/connected");
 
+        // البنية الافتراضية
         let db = {
             capital: 0, digital: 0, cash: 0,
             wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 },
             merchants: {}
         };
 
+        // ============================================
+        // 2. نظام العمل بدون إنترنت (Offline Mode)
+        // ============================================
+        const LOCAL_KEY = 'my_fawry_offline_data';
+        
+        function loadFromLocal() {
+            const savedData = localStorage.getItem(LOCAL_KEY);
+            if (savedData) {
+                try {
+                    db = JSON.parse(savedData);
+                    refreshUI();
+                    document.getElementById('loading-screen').classList.add('hidden');
+                } catch (e) { console.error(e); }
+            }
+        }
+        loadFromLocal(); // محاولة التحميل المحلي فوراً
+
+        // ============================================
+        // 3. الاتصال والمزامنة مع Firebase
+        // ============================================
+        
+        // الاستماع للبيانات
         dbRef.on('value', (snap) => {
             document.getElementById('loading-screen').classList.add('hidden');
             const data = snap.val();
+            
             if (data) {
                 db = data;
                 if (!db.wallets) db.wallets = { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 };
                 if (!db.merchants) db.merchants = {};
+                
+                localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); // تحديث النسخة المحلية
                 refreshUI();
-            } else { 
-                save(); 
+            } else {
+                // أول مرة تشغيل (قاعدة جديدة) -> إنشاء الهيكل وحفظه
+                save();
+            }
+        });
+
+        // مراقبة حالة الاتصال
+        connectedRef.on("value", (snap) => {
+            const statusEl = document.getElementById('conn-status');
+            if (snap.val() === true) {
+                statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> متصل (ONLINE)';
+                statusEl.className = "text-[10px] text-emerald-400 font-bold uppercase tracking-widest italic flex items-center gap-2";
+            } else {
+                statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-orange-500"></span> غير متصل (LOCAL)';
+                statusEl.className = "text-[10px] text-orange-400 font-bold uppercase tracking-widest italic flex items-center gap-2";
             }
         });
 
         function save() { 
-            return dbRef.set(db).then(() => { refreshUI(); }); 
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); // حفظ محلي فوري
+            return dbRef.set(db).catch(err => {
+                console.warn("Offline: Saved locally only.");
+            }).then(() => { refreshUI(); }); 
         }
+
+        // ============================================
+        // 4. وظائف الواجهة والحسابات
+        // ============================================
 
         function refreshUI() {
             const totalW = Object.values(db.wallets || {}).reduce((a, b) => a + (Number(b) || 0), 0);
@@ -167,22 +227,28 @@
             const actual = (Number(db.digital) || 0) + (Number(db.cash) || 0) + totalW + totalD;
             const diff = actual - (Number(db.capital) || 0);
 
-            document.getElementById('cap-val').innerText = Number(db.capital || 0).toLocaleString() + ' ج.م';
-            document.getElementById('dig-val').innerText = Number(db.digital || 0).toLocaleString();
-            document.getElementById('wal-val').innerText = Number(totalW || 0).toLocaleString();
-            document.getElementById('cash-val').innerText = Number(db.cash || 0).toLocaleString();
+            updateText('cap-val', db.capital, ' ج.م');
+            updateText('dig-val', db.digital);
+            updateText('wal-val', totalW);
+            updateText('cash-val', db.cash);
             document.getElementById('debt-val').innerText = (totalD || 0).toLocaleString() + ' ج.م';
 
             const bar = document.getElementById('status-bar');
             if (Math.abs(diff) < 1) {
-                bar.innerText = "الجرد صحيح تماماً ✅";
-                bar.className = "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                bar.innerHTML = '<i class="fas fa-check-circle text-lg block mb-1"></i> الجرد صحيح تماماً';
+                bar.className = "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
             } else {
-                bar.innerText = diff > 0 ? `أرباح / زيادة: +${diff.toLocaleString()} ج.م` : `عجز / مسحوبات: ${diff.toLocaleString()} ج.م`;
-                bar.className = diff > 0 ? "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-blue-500/10 text-blue-400 border-blue-500/20" 
-                                         : "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-rose-500/10 text-rose-400 border-rose-500/20";
+                const isSurplus = diff > 0;
+                bar.innerHTML = `<i class="fas ${isSurplus ? 'fa-plus-circle' : 'fa-exclamation-triangle'} text-lg block mb-1"></i> ${isSurplus ? 'زيادة (أرباح)' : 'عجز (نقص)'}: <span dir="ltr">${Math.abs(diff).toLocaleString()}</span> ج.م`;
+                bar.className = isSurplus 
+                    ? "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+                    : "mb-6 p-4 rounded-2xl text-center text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
             }
             renderMerchants();
+        }
+
+        function updateText(id, val, suffix = '') {
+            document.getElementById(id).innerText = Number(val || 0).toLocaleString() + suffix;
         }
 
         function showWalletDetails() {
@@ -190,18 +256,12 @@
             for (let w in db.wallets) {
                 html += `
                 <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
-                    <span class="text-xs font-bold text-pink-400"><i class="fas fa-mobile-alt ml-2"></i>${w}</span>
-                    <span class="text-sm font-black text-white">${Number(db.wallets[w]).toLocaleString()} ج.م</span>
+                    <span class="text-xs font-bold text-pink-400 flex items-center gap-2"><i class="fas fa-wallet"></i> ${w}</span>
+                    <span class="text-sm font-black text-white" dir="ltr">${Number(db.wallets[w]).toLocaleString()}</span>
                 </div>`;
             }
-            html += '</div><p class="text-[10px] text-slate-500 mt-4 text-center">للتعديل، استخدم زر "تعديل" في القائمة العلوية</p>';
-
-            Swal.fire({
-                title: 'تفاصيل أرصدة المحافظ',
-                html: html,
-                confirmButtonText: 'إغلاق',
-                confirmButtonColor: '#ec4899'
-            });
+            html += '</div><p class="text-[10px] text-slate-500 mt-4 text-center">للتعديل: زر تعديل بالأعلى > المحافظ</p>';
+            Swal.fire({ title: 'تفاصيل المحافظ', html: html, confirmButtonText: 'تمام', confirmButtonColor: '#3b82f6' });
         }
 
         function renderMerchants() {
@@ -212,51 +272,54 @@
             const merchantsObj = db.merchants || {};
             const keys = Object.keys(merchantsObj).sort((a,b) => (merchantsObj[b].debt || 0) - (merchantsObj[a].debt || 0));
             
+            let count = 0;
             keys.forEach(name => {
                 if (name.toLowerCase().includes(search)) {
+                    count++;
                     const m = merchantsObj[name];
                     const div = document.createElement('div');
-                    div.className = "card-display p-4 flex items-center justify-between shadow-sm";
+                    div.className = "card-display p-4 flex items-center justify-between shadow-sm border-slate-700 bg-slate-800/40";
                     div.innerHTML = `
-                        <button onclick="merchantAction('${name}', 'collect')" class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all btn-action"><i class="fas fa-plus"></i></button>
-                        <div class="text-center flex-1 cursor-pointer" onclick="viewHistory('${name}')">
-                            <h4 class="text-[14px] font-bold">${name}</h4>
-                            <p class="text-rose-400 font-black text-[13px] mt-1">${(m.debt || 0).toLocaleString()}</p>
+                        <button onclick="merchantAction('${name}', 'collect')" class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all btn-action border border-emerald-500/20"><i class="fas fa-plus"></i></button>
+                        <div class="text-center flex-1 cursor-pointer active:opacity-70" onclick="viewHistory('${name}')">
+                            <h4 class="text-[14px] font-bold text-slate-200">${name}</h4>
+                            <p class="text-rose-400 font-black text-[15px] mt-1" dir="ltr">${(m.debt||0).toLocaleString()}</p>
                         </div>
-                        <button onclick="merchantAction('${name}', 'send')" class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all btn-action"><i class="fas fa-minus"></i></button>
+                        <button onclick="merchantAction('${name}', 'send')" class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all btn-action border border-rose-500/20"><i class="fas fa-minus"></i></button>
                     `;
                     list.appendChild(div);
                 }
             });
+            if (count === 0) list.innerHTML = `<div class="text-center text-slate-600 py-10"><i class="fas fa-inbox text-4xl mb-2 opacity-50"></i><br>لا يوجد نتائج</div>`;
         }
 
         function getOptions(mode) {
             let opts = {};
             if (mode === 'send') {
-                opts['digital'] = '🖥️ المسطر الرئيسي';
-                opts['cash'] = '💵 الدرج (نقدي)';
-                for (let w in db.wallets) opts[w] = `📱 ${w}`;
+                opts['digital'] = '🖥️ المسطر (رئيسي)';
+                opts['cash'] = '💵 الدرج (كاش)';
+                for (let w in db.wallets) opts[w] = `📱 محفظة ${w}`;
             } else if (mode === 'collect') {
-                opts['cash'] = '💵 الدرج (نقدي)';
-                for (let w in db.wallets) opts[w] = `📱 ${w}`;
-                opts['digital'] = '🖥️ المسطر الرئيسي';
+                opts['cash'] = '💵 الدرج (كاش)';
+                for (let w in db.wallets) opts[w] = `📱 محفظة ${w}`;
+                opts['digital'] = '🖥️ المسطر (رئيسي)';
             } else if (mode === 'deposit') {
-                opts['cash'] = '💵 الدرج (نقدي)';
-                for (let w in db.wallets) opts[w] = `📱 ${w}`;
+                opts['cash'] = '💵 من الدرج';
+                for (let w in db.wallets) opts[w] = `📱 من ${w}`;
             } else {
-                opts['cash'] = '💵 الدرج (نقدي)';
-                opts['digital'] = '🖥️ المسطر الرئيسي';
-                for (let w in db.wallets) opts[w] = `📱 ${w}`;
+                opts['cash'] = '💵 من الدرج';
+                opts['digital'] = '🖥️ من المسطر';
+                for (let w in db.wallets) opts[w] = `📱 من ${w}`;
             }
             return opts;
         }
 
         async function showEditMenu() {
             const { value: mode } = await Swal.fire({
-                title: 'تعديل البيانات الأساسية',
+                title: 'تعديل الأرصدة',
                 input: 'select',
-                inputOptions: { 'cap': 'رأس المال', 'dig': 'المسطر', 'cash': 'الدرج', 'wal': 'المحافظ' },
-                confirmButtonText: 'اختيار'
+                inputOptions: { 'cap': '💎 رأس المال الثابت', 'dig': '🖥️ رصيد المسطر', 'cash': '💵 رصيد الدرج', 'wal': '📱 أرصدة المحافظ' },
+                confirmButtonText: 'التالي'
             });
             if (mode === 'cap') editVal('capital', 'رأس المال');
             else if (mode === 'dig') editVal('digital', 'المسطر');
@@ -265,146 +328,147 @@
         }
 
         async function editVal(key, label) {
-            const { value: n } = await Swal.fire({ title: `تعديل ${label}`, input: 'number', inputValue: db[key] });
+            const { value: n } = await Swal.fire({ title: `تعديل ${label}`, input: 'number', inputValue: db[key], showCancelButton: true });
             if (n !== null && n !== "") { db[key] = parseFloat(n); save(); }
         }
 
         async function manageWallets() {
-            const { value: w } = await Swal.fire({ title: 'اختر المحفظة', input: 'select', inputOptions: Object.keys(db.wallets).reduce((a,v)=>({...a,[v]:v}),{}) });
+            const { value: w } = await Swal.fire({ title: 'اختر المحفظة', input: 'select', inputOptions: Object.keys(db.wallets).reduce((a,v)=>({...a,[v]:v}),{}), showCancelButton: true });
             if (w) {
-                const { value: v } = await Swal.fire({ title: `رصيد ${w}`, input: 'number', inputValue: db.wallets[w] });
+                const { value: v } = await Swal.fire({ title: `رصيد ${w}`, input: 'number', inputValue: db.wallets[w], showCancelButton: true });
                 if (v !== null) { db.wallets[w] = parseFloat(v); save(); }
             }
         }
 
         async function addNewMerchant() {
-            const { value: n } = await Swal.fire({ title: 'إضافة تاجر جديد', input: 'text', inputPlaceholder: 'اسم التاجر' });
-            if (n) {
+            const { value: n } = await Swal.fire({ title: 'تاجر جديد', input: 'text', inputPlaceholder: 'الاسم', showCancelButton: true });
+            if (n && n.trim()) {
                 let name = n.trim();
-                if (!db.merchants) db.merchants = {};
-                if (db.merchants[name]) return Swal.fire('خطأ', 'التاجر موجود بالفعل', 'error');
-                
+                if (db.merchants[name]) return Swal.fire('خطأ', 'موجود بالفعل', 'error');
                 db.merchants[name] = { debt: 0, history: [] };
                 save();
+                Swal.fire({icon: 'success', title: 'تم', timer: 800, showConfirmButton: false});
             }
         }
 
         async function merchantAction(name, type) {
             const isSend = type === 'send';
-            const { value: amt } = await Swal.fire({ title: isSend ? `إرسال لـ ${name}` : `تحصيل من ${name}`, input: 'number' });
+            const { value: amt } = await Swal.fire({ title: isSend ? `إرسال لـ ${name}` : `تحصيل من ${name}`, input: 'number', showCancelButton: true });
             if (!amt || amt <= 0) return;
             const val = parseFloat(amt);
+            const { value: src } = await Swal.fire({ title: isSend ? 'خصم من:' : 'إيداع في:', input: 'select', inputOptions: getOptions(isSend ? 'send' : 'collect') });
+            if (!src) return;
 
             if (isSend) {
-                const { value: src } = await Swal.fire({ title: 'خصم من المصدر', input: 'select', inputOptions: getOptions('send') });
-                if (!src) return;
-                let balance = (src === 'digital') ? db.digital : (src === 'cash') ? db.cash : db.wallets[src];
-                if (balance < val) return Swal.fire('خطأ', 'الرصيد لا يكفي!', 'error');
+                let bal = (src === 'digital') ? db.digital : (src === 'cash') ? db.cash : db.wallets[src];
+                if (bal < val) return Swal.fire('تنبيه', 'الرصيد لا يكفي', 'error');
                 if (src === 'digital') db.digital -= val; else if (src === 'cash') db.cash -= val; else db.wallets[src] -= val;
                 db.merchants[name].debt += val;
                 log(name, `إرسال (${src})`, val);
             } else {
-                const { value: dst } = await Swal.fire({ title: 'استلام في الوجهة', input: 'select', inputOptions: getOptions('collect') });
-                if (!dst) return;
-                if (dst === 'cash') db.cash += val; else if (dst === 'digital') db.digital += val; else db.wallets[dst] += val;
+                if (src === 'cash') db.cash += val; else if (src === 'digital') db.digital += val; else db.wallets[src] += val;
                 db.merchants[name].debt -= val;
-                log(name, `تحصيل (${dst})`, val);
+                log(name, `تحصيل (${src})`, val);
             }
             save();
+            Swal.fire({icon: 'success', title: 'تم', timer: 800, showConfirmButton: false});
         }
 
         async function actionLiquidate() {
-            // جلب أسماء المحافظ بشكل صحيح
-            const walletOptions = Object.keys(db.wallets).reduce((a, v) => ({ ...a, [v]: v }), {});
-            
-            const { value: w } = await Swal.fire({ 
-                title: 'تسييل من محفظة', 
-                input: 'select', 
-                inputOptions: walletOptions,
-                inputPlaceholder: 'اختر المحفظة' 
-            });
+            const { value: w } = await Swal.fire({ title: 'تسييل من', input: 'select', inputOptions: Object.keys(db.wallets).reduce((a,v)=>({...a,[v]:v}),{}) });
             if (!w) return;
-
-            const { value: a } = await Swal.fire({ 
-                title: 'المبلغ المستلم كاش', 
-                input: 'number',
-                inputPlaceholder: 'أدخل المبلغ' 
-            });
-            if (!a || a <= 0) return;
-
-            const { value: f } = await Swal.fire({ 
-                title: 'العمولة / الفرق', 
-                input: 'number', 
-                inputValue: 0,
-                inputPlaceholder: 'العمولة المخصومة من المحفظة' 
-            });
+            const { value: a } = await Swal.fire({ title: 'الكاش المستلم', input: 'number' });
+            if (!a) return;
+            const { value: f } = await Swal.fire({ title: 'رسوم مخصومة', input: 'number', inputValue: 0 });
             
             const cashVal = parseFloat(a);
-            const feeVal = parseFloat(f || 0);
-            const totalToDeduct = cashVal + feeVal;
-
-            if (db.wallets[w] < totalToDeduct) {
-                return Swal.fire('خطأ', 'رصيد المحفظة لا يكفي لتغطية المبلغ والعمولة!', 'error');
-            }
-
-            db.wallets[w] -= totalToDeduct; // يخصم الإجمالي من المحفظة
-            db.cash += cashVal;            // يضاف الصافي فقط للدرج
+            const total = cashVal + parseFloat(f||0);
+            if (db.wallets[w] < total) return Swal.fire('خطأ', 'رصيد المحفظة لا يكفي', 'error');
             
+            db.wallets[w] -= total;
+            db.cash += cashVal;
             save();
+            Swal.fire({icon: 'success', title: 'تم التسييل', timer: 1000});
         }
 
         async function actionDeposit() {
-            const { value: src } = await Swal.fire({ title: 'إيداع للمسطر من', input: 'select', inputOptions: getOptions('deposit') });
+            const { value: src } = await Swal.fire({ title: 'إيداع من:', input: 'select', inputOptions: getOptions('deposit') });
             if (!src) return;
-            const { value: a } = await Swal.fire({ title: 'مبلغ الإيداع', input: 'number' });
-            if (!a || a <= 0) return;
+            const { value: a } = await Swal.fire({ title: 'المبلغ', input: 'number' });
+            if (!a) return;
             const val = parseFloat(a);
-            let balance = (src === 'cash') ? db.cash : db.wallets[src];
-            if (balance < val) return Swal.fire('خطأ', 'الرصيد المختار لا يكفي!', 'error');
+            let bal = (src === 'cash') ? db.cash : db.wallets[src];
+            if (bal < val) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
             if (src === 'cash') db.cash -= val; else db.wallets[src] -= val;
-            db.digital += val; save();
+            db.digital += val; 
+            save();
+            Swal.fire({icon: 'success', title: 'تم الإيداع', timer: 800, showConfirmButton: false});
         }
 
         async function actionWithdraw() {
-            const { value: src } = await Swal.fire({ title: 'سحب مصاريف من', input: 'select', inputOptions: getOptions('withdraw') });
+            const { value: src } = await Swal.fire({ title: 'سحب مصاريف من:', input: 'select', inputOptions: getOptions('withdraw') });
             if (!src) return;
-            const { value: a } = await Swal.fire({ title: 'المبلغ المسحوب', input: 'number' });
-            if (!a || a <= 0) return;
+            const { value: a } = await Swal.fire({ title: 'المبلغ', input: 'number' });
+            if (!a) return;
             const val = parseFloat(a);
-            let balance = (src === 'digital') ? db.digital : (src === 'cash') ? db.cash : db.wallets[src];
-            if (balance < val) return Swal.fire('تنبيه', 'الرصيد لا يكفي!', 'error');
+            let bal = (src === 'digital') ? db.digital : (src === 'cash') ? db.cash : db.wallets[src];
+            if (bal < val) return Swal.fire('تنبيه', 'الرصيد لا يكفي', 'error');
             if (src === 'digital') db.digital -= val; else if (src === 'cash') db.cash -= val; else db.wallets[src] -= val;
             save();
+            Swal.fire({icon: 'success', title: 'تم السحب', timer: 800, showConfirmButton: false});
         }
 
         function log(n, t, a) {
             if (!db.merchants[n].history) db.merchants[n].history = [];
             db.merchants[n].history.push({ t, a, d: new Date().toLocaleString('ar-EG') });
+            if (db.merchants[n].history.length > 50) db.merchants[n].history.shift();
         }
 
         function viewHistory(n) {
             let h = db.merchants[n].history || [];
-            let html = '<div class="space-y-2 max-h-60 overflow-y-auto">';
+            if (!h.length) return Swal.fire('فارغ', '', 'info');
+            let html = '<div class="space-y-2 max-h-60 overflow-y-auto px-1">';
             h.slice().reverse().forEach(x => {
-                html += `<div class="p-2 border-b border-slate-700 text-right text-[10px] flex justify-between">
-                    <span class="text-slate-500">${x.d}</span> <span class="font-bold">${x.t}: ${x.a.toLocaleString()}</span>
+                html += `<div class="p-2 border-b border-slate-700 text-right text-xs flex justify-between">
+                    <span class="text-slate-400">${x.d.split(',')[0]}</span> 
+                    <span>${x.t}: <b class="text-white">${x.a}</b></span>
                 </div>`;
             });
+            html += '</div>';
             Swal.fire({ title: `سجل ${n}`, html });
         }
 
         async function openSettings() {
-            const { value: opt } = await Swal.fire({ title: 'الإعدادات', input: 'select', inputOptions: { 'del': '🗑️ حذف تاجر' } });
-            if (opt === 'del') {
-                const { value: m } = await Swal.fire({ title: 'حذف تاجر', input: 'select', inputOptions: Object.keys(db.merchants || {}).reduce((a,v)=>({...a,[v]:v}),{}) });
-                if (m) {
-                    if (db.merchants[m].debt > 0) {
-                        return Swal.fire('فشل الحذف', `لا يمكن حذف التاجر (${m}) لأن عليه مديونية قدرها ${db.merchants[m].debt} ج.م. يجب تصفير الحساب أولاً.`, 'error');
-                    }
-                    const { value: p } = await Swal.fire({ title: 'كلمة السر للحذف', input: 'password' });
-                    if (p === '1234') { delete db.merchants[m]; save(); }
-                    else { Swal.fire('خطأ', 'كلمة السر غير صحيحة', 'error'); }
-                }
+            const { value: opt } = await Swal.fire({ 
+                title: 'إعدادات', 
+                input: 'select', 
+                inputOptions: { 'backup': 'نسخة احتياطية', 'del': 'حذف تاجر' },
+                showCancelButton: true
+            });
+            if (opt === 'backup') downloadBackup();
+            else if (opt === 'del') deleteMerchantFlow();
+        }
+
+        function downloadBackup() {
+            const dataStr = JSON.stringify(db, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Fawry_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            Swal.fire('تم', 'تم حفظ الملف في التنزيلات', 'success');
+        }
+
+        async function deleteMerchantFlow() {
+            const { value: m } = await Swal.fire({ title: 'حذف تاجر', input: 'select', inputOptions: Object.keys(db.merchants).reduce((a,v)=>({...a,[v]:v}),{}) });
+            if (m) {
+                if (db.merchants[m].debt > 0) return Swal.fire('خطأ', 'عليه مديونية!', 'error');
+                const { value: p } = await Swal.fire({ title: 'كلمة السر', input: 'password' });
+                if (p === '1234') { delete db.merchants[m]; save(); Swal.fire('تم الحذف', '', 'success'); }
+                else Swal.fire('خطأ', 'كلمة السر خطأ', 'error');
             }
         }
     </script>
