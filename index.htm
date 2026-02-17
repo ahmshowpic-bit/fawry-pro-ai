@@ -3,127 +3,670 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fawry Pro V4.7 - Final</title>
+    <title>Ahmed PRO - النظام المالي</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
 
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 16px; transition: transform 0.2s; }
-        .card:active { transform: scale(0.98); }
-        .btn-main { background: #2563eb; color: white; border-radius: 12px; padding: 12px; font-weight: bold; width: 100%; text-align: center; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.5); }
-        .btn-danger { background: rgba(225, 29, 72, 0.1); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.2); }
-        
-        .swal2-popup { background: #1e293b !important; color: white !important; border-radius: 20px !important; border: 1px solid #334155; font-family: 'Cairo' !important; }
-        .swal2-input, .swal2-select { background: #0f172a !important; color: white !important; border: 1px solid #334155 !important; border-radius: 10px !important; margin: 10px auto !important; width: 85% !important; }
-        .hidden { display: none !important; }
-        
-        .progress-bar-bg { width: 100%; background: #334155; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
-        .progress-bar-fill { height: 100%; background: #10b981; width: 0%; transition: width 0.5s; }
-
-        /* تأثير التوهج للإشعارات */
-        @keyframes glowing {
-            0% { box-shadow: 0 0 5px #e11d48; border-color: #e11d48; }
-            50% { box-shadow: 0 0 20px #e11d48; border-color: #fb7185; }
-            100% { box-shadow: 0 0 5px #e11d48; border-color: #e11d48; }
+        :root {
+            --bg-primary: #070d1a;
+            --bg-secondary: #0d1829;
+            --bg-card: #111f33;
+            --bg-card-hover: #162640;
+            --border: #1e3452;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-rose: #f43f5e;
+            --accent-amber: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --text-primary: #e2e8f0;
+            --text-secondary: #64748b;
         }
-        .animate-glow { animation: glowing 1.5s infinite; }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            -webkit-tap-highlight-color: transparent;
+            background-image: 
+                radial-gradient(ellipse at 20% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        #login-screen {
+            background: var(--bg-primary);
+            background-image: radial-gradient(ellipse at 50% 30%, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 32px;
+            width: 320px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+        }
+
+        .login-icon {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .login-input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 14px 16px;
+            border-radius: 14px;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .login-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            color: white;
+            padding: 14px;
+            border-radius: 14px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59, 130, 246, 0.5); }
+        .login-btn:active { transform: translateY(0); }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: rgba(7, 13, 26, 0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .header-logo {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .header-btn {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .header-btn:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); }
+        .header-btn:active { transform: scale(0.93); }
+
+        /* ===== STATS CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            opacity: 0.06;
+            transform: translate(20px, -20px);
+        }
+
+        .stat-card.main-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #0d1f3c, #0f2644);
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+
+        .stat-card.main-card::before { background: #3b82f6; width: 120px; height: 120px; }
+
+        .stat-card.cash-card {
+            grid-column: span 2;
+            border-color: rgba(16, 185, 129, 0.25);
+            background: linear-gradient(135deg, #0a1f1a, #0c2418);
+        }
+
+        .stat-card.cash-card::before { background: #10b981; width: 120px; height: 120px; }
+        .stat-card.blue::before { background: #3b82f6; }
+        .stat-card.pink::before { background: #f43f5e; }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            line-height: 1;
+        }
+
+        .stat-card.main-card .stat-value { font-size: 32px; }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .action-btn {
+            border-radius: 14px;
+            padding: 14px 12px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn i { font-size: 18px; }
+        .action-btn:active { transform: scale(0.96); }
+
+        .btn-indigo {
+            background: linear-gradient(135deg, #4338ca, #6366f1);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-slate {
+            background: var(--bg-card);
+            border: 1px solid var(--border) !important;
+            color: var(--text-primary);
+        }
+
+        .btn-slate:hover { background: var(--bg-card-hover); }
+
+        /* ===== SMART ANALYTICS ===== */
+        .analytics-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .analytics-card:hover { border-color: rgba(139, 92, 246, 0.4); }
+
+        /* ===== MERCHANT CARDS ===== */
+        .merchant-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 14px;
+            transition: all 0.2s;
+            animation: slideIn 0.3s ease both;
+        }
+
+        .merchant-card:active { transform: scale(0.98); }
+
+        .merchant-card.is-late {
+            border-color: rgba(244, 63, 94, 0.35);
+            background: linear-gradient(135deg, #1a0d14, #200f19);
+        }
+
+        .merchant-card.zero-debt {
+            opacity: 0.6;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .merchant-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .merchant-debt {
+            font-size: 15px;
+            font-weight: 800;
+            color: #f87171;
+            direction: ltr;
+        }
+
+        .merchant-debt.zero { color: var(--accent-green); }
+
+        .debt-progress {
+            height: 3px;
+            background: var(--border);
+            border-radius: 10px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .debt-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s ease;
+            background: linear-gradient(90deg, #f43f5e, #fb7185);
+        }
+
+        .merchant-action-btn {
+            width: 38px; height: 38px;
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 15px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .btn-collect {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-collect:hover { background: rgba(16, 185, 129, 0.2); transform: scale(1.08); }
+
+        .btn-send {
+            background: rgba(244, 63, 94, 0.1);
+            color: #f43f5e;
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .btn-send:hover { background: rgba(244, 63, 94, 0.2); transform: scale(1.08); }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 14px 12px 44px;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-bar:focus { border-color: var(--accent-blue); }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-bar {
+            background: rgba(7, 13, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            color: white;
+            border-radius: 14px;
+            padding: 14px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-primary:active { transform: scale(0.97); }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.1);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            border-radius: 14px;
+            padding: 14px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.25s;
+        }
+
+        .btn-danger:active { transform: scale(0.97); }
+
+        /* ===== NOTIFICATION BADGE ===== */
+        .notify-btn {
+            position: relative;
+        }
+
+        .notify-badge {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            background: #f43f5e;
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-primary);
+        }
+
+        /* ===== AI INSIGHT BUTTON ===== */
+        .ai-btn {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: #a78bfa;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .ai-btn:hover { background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.2)); }
+        .ai-btn:active { transform: scale(0.97); }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(244, 63, 94, 0.4), 0 0 0 1px rgba(244, 63, 94, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(244, 63, 94, 0.7), 0 0 0 1px rgba(244, 63, 94, 0.5); }
+        }
+
+        .animate-glow { animation: glow-pulse 1.8s infinite; }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .count-animate { animation: countUp 0.4s ease both; }
+
+        /* ===== SWAL OVERRIDES ===== */
+        .swal2-popup { background: #111f33 !important; color: white !important; border-radius: 20px !important; border: 1px solid #1e3452 !important; font-family: 'Cairo' !important; }
+        .swal2-title { color: white !important; font-family: 'Cairo' !important; }
+        .swal2-content, .swal2-html-container { color: #94a3b8 !important; font-family: 'Cairo' !important; }
+        .swal2-input, .swal2-select { background: #0d1829 !important; color: white !important; border: 1px solid #1e3452 !important; border-radius: 12px !important; margin: 8px auto !important; font-family: 'Cairo' !important; }
+        .swal2-confirm { border-radius: 12px !important; font-family: 'Cairo' !important; font-weight: 700 !important; }
+        .swal2-cancel { border-radius: 12px !important; font-family: 'Cairo' !important; }
+
+        .hidden { display: none !important; }
+
+        /* ===== DEBT AGE COLORS ===== */
+        .age-fresh { color: #10b981; font-size: 10px; font-weight: 700; }
+        .age-medium { color: #f59e0b; font-size: 10px; font-weight: 700; }
+        .age-late { color: #f43f5e; font-size: 10px; font-weight: 700; }
+
+        /* ===== QUICK STATS ROW ===== */
+        .quick-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 12px;
+            text-align: center;
+            flex: 1;
+        }
+
+        /* ===== SCROLL AREA ===== */
+        #merchant-list > .merchant-card:nth-child(1) { animation-delay: 0.05s; }
+        #merchant-list > .merchant-card:nth-child(2) { animation-delay: 0.1s; }
+        #merchant-list > .merchant-card:nth-child(3) { animation-delay: 0.15s; }
+        #merchant-list > .merchant-card:nth-child(4) { animation-delay: 0.2s; }
+        #merchant-list > .merchant-card:nth-child(5) { animation-delay: 0.25s; }
+
+        /* ===== SORT TABS ===== */
+        .sort-tab {
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+        }
+
+        .sort-tab.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* ===== LIVE CLOCK ===== */
+        #live-clock {
+            font-size: 10px;
+            color: #475569;
+            font-weight: 600;
+            direction: ltr;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-32">
 
-    <div id="login-screen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center">
-        <div class="bg-blue-600 p-4 rounded-2xl mb-4 shadow-xl"><i class="fas fa-fingerprint text-3xl"></i></div>
-        <h1 class="text-xl font-bold mb-6">تسجيل دخول آمن</h1>
-        <input type="password" id="password" placeholder="كلمة المرور" class="bg-slate-800 border border-slate-700 text-center text-white p-3 rounded-xl w-64 mb-4 outline-none focus:border-blue-500">
-        <button onclick="login()" class="bg-blue-600 text-white py-3 px-8 rounded-xl font-bold hover:bg-blue-500 transition">دخول</button>
-        <p id="login-msg" class="text-rose-500 text-xs mt-3 h-4"></p>
+    <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center">
+        <div class="login-card">
+            <div class="login-icon">
+                <i class="fas fa-shield-halved text-white text-2xl"></i>
+            </div>
+            <h1 class="text-center text-xl font-black mb-1">Ahmed <span style="color: #3b82f6">PRO</span></h1>
+            <p class="text-center text-xs mb-6" style="color: #475569">النظام المالي الذكي</p>
+            <input type="password" id="password" placeholder="🔑 كلمة المرور" class="login-input mb-3" onkeydown="if(event.key==='Enter')login()">
+            <button onclick="login()" class="login-btn">
+                <i class="fas fa-sign-in-alt ml-2"></i>دخول آمن
+            </button>
+            <p id="login-msg" class="text-center text-xs mt-3 h-4" style="color: #f43f5e"></p>
+        </div>
     </div>
 
     <div id="app-content" class="hidden">
-        <header class="glass sticky top-0 z-40 p-4 shadow-lg">
+
+        <header class="header p-4 shadow-2xl">
             <div class="container mx-auto max-w-md flex justify-between items-center">
                 <div>
-                    <h1 class="text-lg font-bold">AHMED<span class="text-blue-500">PRO</span></h1>
-                    <div id="conn-status" class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-slate-600"></span> جاري التحميل...
+                    <div class="header-logo">AHMED<span style="color: #3b82f6">PRO</span> <span style="color: #1e3452; font-size: 12px; font-weight: 600">v5.1</span></div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+                        <div id="conn-status" class="text-[10px] font-bold flex items-center gap-1" style="color:#475569">
+                            <span class="w-2 h-2 rounded-full" style="background:#334155;display:inline-block"></span> جاري التحميل...
+                        </div>
+                        <span id="live-clock"></span>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="showLateMerchants()" id="notify-btn" class="hidden bg-rose-500/20 text-rose-500 w-10 h-10 rounded-xl border border-rose-500/30 transition-all duration-300">
+                    <button onclick="showLateMerchants()" id="notify-btn" class="header-btn notify-btn hidden animate-glow" style="color:#f43f5e; border-color:rgba(244,63,94,0.3); background:rgba(244,63,94,0.1)">
                         <i class="fas fa-bell"></i>
+                        <span id="notify-badge" class="notify-badge">0</span>
                     </button>
-                    
-                    <button onclick="showEditMenu()" class="bg-slate-800 text-blue-400 w-10 h-10 rounded-xl border border-slate-700"><i class="fas fa-pen"></i></button>
-                    <button onclick="openSettings()" class="bg-slate-800 text-slate-400 w-10 h-10 rounded-xl border border-slate-700"><i class="fas fa-cog"></i></button>
+                    <button onclick="showAIInsights()" class="header-btn" style="color:#a78bfa; border-color:rgba(139,92,246,0.3); background:rgba(139,92,246,0.1)" title="تحليل ذكي">
+                        <i class="fas fa-brain"></i>
+                    </button>
+                    <button onclick="showEditMenu()" class="header-btn" style="color:#60a5fa">
+                        <i class="fas fa-pen-to-square"></i>
+                    </button>
+                    <button onclick="openSettings()" class="header-btn" style="color:#94a3b8">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
             </div>
         </header>
 
         <main class="container mx-auto max-w-md p-4 space-y-4">
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="card col-span-2 bg-gradient-to-br from-slate-800 to-slate-900 border-blue-500/30 text-center py-6">
-                    <span class="text-slate-400 text-xs font-bold block mb-1">رأس المال (الثابت)</span>
-                    <span id="cap-val" class="text-3xl font-black tracking-wider">0</span>
+
+            <div class="stats-grid">
+                <div class="stat-card main-card">
+                    <div class="stat-label" style="color:#60a5fa">
+                        <i class="fas fa-gem"></i> رأس المال الثابت
+                    </div>
+                    <div id="cap-val" class="stat-value count-animate">0</div>
+                    <div style="font-size:11px; color:#334155; margin-top:4px">جنيه مصري</div>
                 </div>
-                <div class="card text-center">
-                    <span class="text-indigo-400 text-xs font-bold block mb-1">المسطر</span>
-                    <span id="dig-val" class="text-lg font-bold">0</span>
+                <div class="stat-card blue" ondblclick="showDigitalHistory()" style="cursor: pointer; user-select: none;">
+                    <div class="stat-label" style="color:#818cf8">
+                        <i class="fas fa-desktop"></i> المسطر (سجل: ضغطتين)
+                    </div>
+                    <div id="dig-val" class="stat-value" style="font-size:20px">0</div>
                 </div>
-                <div class="card text-center cursor-pointer hover:bg-slate-800" onclick="showWalletDetails()">
-                    <span class="text-pink-400 text-xs font-bold block mb-1">المحافظ <i class="fas fa-info-circle text-[10px]"></i></span>
-                    <span id="wal-val" class="text-lg font-bold">0</span>
+                <div class="stat-card pink" onclick="showWalletDetails()" style="cursor:pointer">
+                    <div class="stat-label" style="color:#fb7185">
+                        <i class="fas fa-wallet"></i> المحافظ <i class="fas fa-chevron-down text-[9px]"></i>
+                    </div>
+                    <div id="wal-val" class="stat-value" style="font-size:20px">0</div>
                 </div>
-                <div class="card col-span-2 text-center border-emerald-500/30">
-                    <span class="text-emerald-400 text-xs font-bold block mb-1">النقدية (الدرج)</span>
-                    <span id="cash-val" class="text-2xl font-bold">0</span>
+                <div class="stat-card cash-card">
+                    <div class="stat-label" style="color:#34d399">
+                        <i class="fas fa-money-bills"></i> النقدية (الدرج)
+                    </div>
+                    <div id="cash-val" class="stat-value count-animate" style="color:#34d399; font-size:28px">0</div>
                 </div>
             </div>
 
-            <div id="status-bar" class="p-3 rounded-xl text-center text-xs font-bold hidden"></div>
+            <div class="flex gap-2">
+                <div class="quick-stat">
+                    <div style="font-size:10px; color:#475569; font-weight:700; margin-bottom:3px">مديونيات</div>
+                    <div id="debt-val" class="font-black" style="font-size:16px; color:#f87171">0</div>
+                </div>
+                <div class="quick-stat">
+                    <div style="font-size:10px; color:#475569; font-weight:700; margin-bottom:3px">عدد التجار</div>
+                    <div id="merchant-count" class="font-black" style="font-size:16px; color:#60a5fa">0</div>
+                </div>
+                <div class="quick-stat">
+                    <div style="font-size:10px; color:#475569; font-weight:700; margin-bottom:3px">فرق الجرد</div>
+                    <div id="diff-quick" class="font-black" style="font-size:16px">0</div>
+                </div>
+            </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="actionLiquidate()" class="btn-main bg-indigo-600 hover:bg-indigo-500">
-                    <i class="fas fa-sync-alt block text-lg mb-1"></i>سحب للدرج
+            <div id="status-bar" class="status-bar hidden"></div>
+
+            <div class="action-grid">
+                <button onclick="actionLiquidate()" class="action-btn btn-indigo">
+                    <i class="fas fa-rotate"></i>
+                    سحب للدرج
                 </button>
-                <button onclick="actionDeposit()" class="btn-main bg-slate-700 hover:bg-slate-600 border border-slate-600">
-                    <i class="fas fa-arrow-up block text-lg mb-1"></i> إيداع مسطر
+                <button onclick="actionDeposit()" class="action-btn btn-slate">
+                    <i class="fas fa-arrow-up-from-bracket"></i>
+                    إيداع مسطر
                 </button>
             </div>
 
             <div>
                 <div class="flex justify-between items-center mb-2 px-1">
-                    <span class="text-xs font-bold text-slate-400">مديونيات التجار</span>
-                    <span id="debt-val" class="text-sm font-bold text-rose-400">0</span>
+                    <span class="text-xs font-bold" style="color:#475569">مديونيات التجار</span>
+                    <div class="flex gap-1">
+                        <button onclick="setSortMode('debt')" id="sort-debt" class="sort-tab active">الأعلى دين</button>
+                        <button onclick="setSortMode('name')" id="sort-name" class="sort-tab">أبجدي</button>
+                        <button onclick="setSortMode('date')" id="sort-date" class="sort-tab">الأحدث</button>
+                    </div>
                 </div>
+
                 <div class="relative">
-                    <i class="fas fa-search absolute right-3 top-3.5 text-slate-500 text-sm"></i>
-                    <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="بحث عن تاجر..." class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pr-9 pl-3 text-sm focus:border-blue-500 outline-none">
+                    <i class="fas fa-magnifying-glass absolute text-sm" style="left:14px; top:50%; transform:translateY(-50%); color:#334155; pointer-events:none"></i>
+                    <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="بحث سريع عن تاجر..." class="search-bar">
                 </div>
             </div>
 
             <div id="merchant-list" class="space-y-2 pb-20"></div>
+
         </main>
 
-        <div class="fixed bottom-0 w-full glass z-40">
+        <div class="bottom-bar fixed bottom-0 w-full z-40">
             <div class="container mx-auto max-w-md p-4 flex gap-3">
-                <button onclick="addNewMerchant()" class="flex-[2] btn-main shadow-lg">
-                    <i class="fas fa-user-plus ml-2"></i> تاجر جديد
+                <button onclick="addNewMerchant()" class="btn-primary flex-[2]">
+                    <i class="fas fa-user-plus"></i>
+                    تاجر جديد
                 </button>
-                <button onclick="actionWithdraw()" class="flex-1 btn-main btn-danger">
-                    سحب مصاريف
+                <button onclick="actionWithdraw()" class="btn-danger flex-1">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                    سحب
                 </button>
             </div>
         </div>
+
     </div>
 
     <script>
@@ -144,17 +687,30 @@
         const MY_EMAIL = 'ahmshowpic@gmail.com';
         const LOCAL_KEY = 'fawry_v4_data';
 
-        let db = { capital: 0, digital: 0, cash: 0, wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 }, merchants: {} };
+        let db = { capital: 0, digital: 0, cash: 0, wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 }, merchants: {}, digitalHistory: [] };
         let isOnline = false;
         let lateMerchants = [];
+        let sortMode = 'debt';
 
+        // ===== LIVE CLOCK =====
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2,'0');
+            const m = String(now.getMinutes()).padStart(2,'0');
+            document.getElementById('live-clock').textContent = `${h}:${m}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ===== LOGIN =====
         function login() {
             const p = document.getElementById('password').value;
             const msg = document.getElementById('login-msg');
-            if(!p) return;
+            if (!p) return;
             msg.innerText = "جاري التحقق...";
             auth.signInWithEmailAndPassword(MY_EMAIL, p).catch(() => {
-                msg.innerText = "كلمة المرور غير صحيحة"; setTimeout(()=>msg.innerText="", 2000);
+                msg.innerText = "❌ كلمة المرور غير صحيحة";
+                setTimeout(() => msg.innerText = "", 3000);
             });
         }
 
@@ -169,16 +725,18 @@
             }
         });
 
+        // ===== INIT =====
         function initSystem() {
             const local = localStorage.getItem(LOCAL_KEY);
-            if(local) { try { db = JSON.parse(local); updateUI(); } catch(e){} }
+            if (local) { try { db = JSON.parse(local); updateUI(); } catch (e) {} }
 
             dbRef.on('value', snap => {
                 const val = snap.val();
-                if(val) {
+                if (val) {
                     db = val;
-                    if(!db.wallets) db.wallets = { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 };
-                    if(!db.merchants) db.merchants = {};
+                    if (!db.wallets) db.wallets = { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 };
+                    if (!db.merchants) db.merchants = {};
+                    if (!db.digitalHistory) db.digitalHistory = []; // Initialize Digital Log
                     localStorage.setItem(LOCAL_KEY, JSON.stringify(db));
                     updateUI();
                 } else save();
@@ -187,79 +745,81 @@
             connectedRef.on("value", snap => {
                 const el = document.getElementById('conn-status');
                 isOnline = snap.val();
-                if(isOnline === true) {
-                    el.innerHTML='<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> متصل';
-                    el.classList.replace('text-slate-400', 'text-emerald-400');
+                if (isOnline === true) {
+                    el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse 2s infinite"></span> متصل';
+                    el.style.color = '#34d399';
                 } else {
-                    el.innerHTML='<span class="w-2 h-2 rounded-full bg-orange-500"></span> وضع محلي';
-                    el.classList.replace('text-emerald-400', 'text-slate-400');
+                    el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b"></span> وضع محلي';
+                    el.style.color = '#f59e0b';
                 }
             });
         }
 
         async function save() {
             localStorage.setItem(LOCAL_KEY, JSON.stringify(db));
-            try { await dbRef.set(db); } catch(e){}
+            try { await dbRef.set(db); } catch (e) {}
             updateUI();
         }
 
+        // ===== UPDATE UI =====
         function updateUI() {
             document.getElementById('cap-val').innerText = num(db.capital);
             document.getElementById('dig-val').innerText = num(db.digital);
-            const totalWallets = Object.values(db.wallets||{}).reduce((a,b)=>a+Number(b),0);
+            const totalWallets = Object.values(db.wallets || {}).reduce((a, b) => a + Number(b), 0);
             document.getElementById('wal-val').innerText = num(totalWallets);
             document.getElementById('cash-val').innerText = num(db.cash);
-            const totalDebt = Object.values(db.merchants||{}).reduce((a,b)=>a+Number(b.debt),0);
+            const totalDebt = Object.values(db.merchants || {}).reduce((a, b) => a + Number(b.debt), 0);
             document.getElementById('debt-val').innerText = num(totalDebt);
+            document.getElementById('merchant-count').innerText = Object.keys(db.merchants || {}).length;
 
             const actual = Number(db.digital) + Number(db.cash) + totalWallets + totalDebt;
             const diff = actual - Number(db.capital);
+            const diffEl = document.getElementById('diff-quick');
+            diffEl.innerText = (diff >= 0 ? '+' : '') + num(diff);
+            diffEl.style.color = Math.abs(diff) <= 1 ? '#10b981' : (diff > 0 ? '#60a5fa' : '#f43f5e');
+
             const bar = document.getElementById('status-bar');
-            bar.classList.remove('hidden'); 
-            
+            bar.classList.remove('hidden');
             if (Math.abs(diff) > 1) {
-                bar.className = diff > 0 
-                    ? "p-3 rounded-xl text-center text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                    : "p-3 rounded-xl text-center text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
-                bar.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${diff > 0 ? 'زيادة' : 'عجز'}: ${num(Math.abs(diff))} ج.م`;
+                bar.style.cssText = `background:${diff > 0 ? 'rgba(59,130,246,0.08)' : 'rgba(244,63,94,0.08)'}; border:1px solid ${diff > 0 ? 'rgba(59,130,246,0.2)' : 'rgba(244,63,94,0.2)'}; color:${diff > 0 ? '#60a5fa' : '#f87171'}`;
+                bar.innerHTML = `<i class="fas fa-triangle-exclamation ml-2"></i>${diff > 0 ? 'زيادة' : 'عجز'} في الجرد: <strong>${num(Math.abs(diff))} ج.م</strong>`;
             } else {
-                bar.className = "p-3 rounded-xl text-center text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                bar.innerHTML = `<i class="fas fa-check-circle"></i> الجرد مظبوط 100%`;
+                bar.style.cssText = 'background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); color:#34d399';
+                bar.innerHTML = '<i class="fas fa-circle-check ml-2"></i> الجرد مضبوط 100% ✓';
             }
-            
-            checkNotifications(); // فحص الإشعارات أولاً
-            renderMerchants(); // ثم رسم التجار
+
+            checkNotifications();
+            renderMerchants();
         }
 
-        function num(n) { return Number(n || 0).toLocaleString(); }
+        // Changed to English numbers
+        function num(n) { return Number(n || 0).toLocaleString('en-US'); }
 
-        function getWalletOptions() { const opts = {}; for (let w in db.wallets) opts[w] = w; return opts; }
-        function getFullOptions(mode) {
-            const wallets = {}; for(let w in db.wallets) wallets[w] = `📱 ${w}`;
-            if(mode === 'send') return { 'digital': '🖥️ المسطر', 'cash': '💵 الكاش', ...wallets };
-            if(mode === 'collect') return { 'cash': '💵 الكاش', ...wallets, 'digital': '🖥️ المسطر' };
-            if(mode === 'deposit') return { 'cash': '💵 من الكاش', ...wallets };
-            return { 'cash': '💵 من الكاش', 'digital': '🖥️ من المسطر', ...wallets };
+        // ===== SORT =====
+        function setSortMode(mode) {
+            sortMode = mode;
+            document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('sort-' + mode).classList.add('active');
+            renderMerchants();
         }
 
-        // --- نظام الإشعارات المطور ---
+        // ===== NOTIFICATIONS =====
         function checkNotifications() {
             lateMerchants = [];
             const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
             const now = Date.now();
-
-            for(let name in db.merchants) {
+            for (let name in db.merchants) {
                 const m = db.merchants[name];
-                // الشرط: عليه مديونية + مر أكثر من 5 أيام على آخر عملية
-                if(m.debt > 0 && (now - (m.lastUpdate || 0) > FIVE_DAYS)) {
-                    lateMerchants.push({name, debt: m.debt, days: Math.floor((now - (m.lastUpdate || 0)) / (24*60*60*1000)) });
+                if (m.debt > 0 && (now - (m.lastUpdate || 0) > FIVE_DAYS)) {
+                    lateMerchants.push({ name, debt: m.debt, days: Math.floor((now - (m.lastUpdate || 0)) / (24 * 60 * 60 * 1000)) });
                 }
             }
-
             const btn = document.getElementById('notify-btn');
-            if(lateMerchants.length > 0) {
+            const badge = document.getElementById('notify-badge');
+            if (lateMerchants.length > 0) {
                 btn.classList.remove('hidden');
-                btn.classList.add('animate-glow'); // إضافة تأثير التوهج
+                btn.classList.add('animate-glow');
+                badge.textContent = lateMerchants.length;
             } else {
                 btn.classList.add('hidden');
                 btn.classList.remove('animate-glow');
@@ -267,265 +827,462 @@
         }
 
         function showLateMerchants() {
-            if(lateMerchants.length === 0) return Swal.fire('ممتاز', 'لا يوجد تجار متأخرين', 'success');
-            let html = '<div class="space-y-2 text-right">';
-            lateMerchants.forEach(m => {
-                html += `<div class="bg-rose-900/20 p-2 rounded border border-rose-500/30 flex justify-between items-center">
+            if (lateMerchants.length === 0) return Swal.fire({ icon: 'success', title: 'ممتاز!', text: 'لا يوجد تجار متأخرين' });
+            let html = '<div class="space-y-2 text-right" style="max-height:300px;overflow-y:auto">';
+            lateMerchants.sort((a, b) => b.days - a.days).forEach(m => {
+                const urgency = m.days > 14 ? '#7f1d1d' : '#450a0a';
+                html += `<div style="background:${urgency}; padding:10px 14px; border-radius:12px; border:1px solid rgba(244,63,94,0.3); display:flex; justify-content:space-between; align-items:center">
                     <div>
-                        <div class="font-bold text-white">${m.name}</div>
-                        <div class="text-[10px] text-rose-300">متأخر ${m.days} يوم</div>
+                        <div style="font-weight:700; color:white; font-size:14px">${m.name}</div>
+                        <div style="font-size:11px; color:#fca5a5">⏰ متأخر ${m.days} يوم</div>
                     </div>
-                    <span class="text-rose-400 font-bold">${num(m.debt)}</span>
+                    <span style="color:#fca5a5; font-weight:800; font-size:15px">${num(m.debt)}</span>
                 </div>`;
             });
-            Swal.fire({ title: '⚠️ تنبيهات المتأخرين', html: html + '</div>', confirmButtonText: 'علم' });
+            Swal.fire({ title: `⚠️ ${lateMerchants.length} تجار متأخرين`, html: html + '</div>', confirmButtonText: 'حسناً', confirmButtonColor: '#f43f5e' });
         }
 
-        // --- العمليات ---
+        // ===== AI INSIGHTS =====
+        async function showAIInsights() {
+            const totalDebt = Object.values(db.merchants || {}).reduce((a, b) => a + Number(b.debt), 0);
+            const totalWallets = Object.values(db.wallets || {}).reduce((a, b) => a + Number(b), 0);
+            const actual = Number(db.digital) + Number(db.cash) + totalWallets + totalDebt;
+            const diff = actual - Number(db.capital);
+            const merchantCount = Object.keys(db.merchants || {}).length;
+            const topMerchants = Object.entries(db.merchants || {})
+                .sort((a, b) => b[1].debt - a[1].debt)
+                .slice(0, 5)
+                .map(([n, m]) => `${n}: ${num(m.debt)} ج.م`)
+                .join('، ');
+
+            const summaryHtml = `
+            <div style="text-align:right; font-size:13px; line-height:2; color:#94a3b8">
+                <div style="background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.2); border-radius:14px; padding:14px; margin-bottom:12px">
+                    <div style="color:#a78bfa; font-weight:800; font-size:14px; margin-bottom:10px">📊 ملخص مالي سريع</div>
+                    <div>💰 رأس المال: <strong style="color:white">${num(db.capital)}</strong></div>
+                    <div>🏦 إجمالي الأصول: <strong style="color:white">${num(actual)}</strong></div>
+                    <div>💸 مديونيات: <strong style="color:#f87171">${num(totalDebt)}</strong></div>
+                    <div>🔵 فرق الجرد: <strong style="${Math.abs(diff) <= 1 ? 'color:#34d399' : diff > 0 ? 'color:#60a5fa' : 'color:#f87171'}">${diff >= 0 ? '+' : ''}${num(diff)}</strong></div>
+                    <div>👥 عدد التجار: <strong style="color:white">${merchantCount}</strong></div>
+                    ${lateMerchants.length > 0 ? `<div>⚠️ متأخرون: <strong style="color:#f87171">${lateMerchants.length} تاجر</strong></div>` : '<div>✅ لا يوجد متأخرون</div>'}
+                </div>
+                ${topMerchants ? `<div style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.15); border-radius:14px; padding:12px">
+                    <div style="color:#60a5fa; font-weight:800; margin-bottom:8px">🏆 أعلى 5 مديونيات</div>
+                    <div style="color:#94a3b8; font-size:12px">${topMerchants}</div>
+                </div>` : ''}
+            </div>
+            `;
+
+            Swal.fire({
+                title: '🤖 التحليل الذكي',
+                html: summaryHtml,
+                confirmButtonText: 'تم',
+                confirmButtonColor: '#8b5cf6',
+                width: '380px'
+            });
+        }
+
+        // ===== RENDER MERCHANTS =====
+        function renderMerchants() {
+            const list = document.getElementById('merchant-list');
+            const search = document.getElementById('merchantSearch').value.toLowerCase();
+            const now = Date.now();
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+            const FIVE_DAYS = 5 * ONE_DAY;
+            const maxDebt = Math.max(...Object.values(db.merchants || {}).map(m => m.debt), 1);
+
+            let entries = Object.entries(db.merchants || {}).filter(([name]) => name.toLowerCase().includes(search));
+
+            if (sortMode === 'debt') entries.sort((a, b) => b[1].debt - a[1].debt);
+            else if (sortMode === 'name') entries.sort((a, b) => a[0].localeCompare(b[0], 'ar'));
+            else if (sortMode === 'date') entries.sort((a, b) => (b[1].lastUpdate || 0) - (a[1].lastUpdate || 0));
+
+            list.innerHTML = '';
+
+            if (entries.length === 0) {
+                list.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#334155">
+                    <i class="fas fa-users-slash" style="font-size:36px; margin-bottom:12px; display:block"></i>
+                    <div style="font-weight:700">${search ? 'لا نتائج للبحث' : 'لا يوجد تجار بعد'}</div>
+                </div>`;
+                return;
+            }
+
+            entries.forEach(([name, m]) => {
+                const isLate = lateMerchants.some(lm => lm.name === name);
+                const daysSince = Math.floor((now - (m.lastUpdate || 0)) / ONE_DAY);
+                const debtRatio = Math.min((m.debt / maxDebt) * 100, 100);
+                const isZero = m.debt === 0;
+
+                let ageLabel = '';
+                if (m.debt > 0) {
+                    if (daysSince <= 2) ageLabel = `<span class="age-fresh">✓ حديث</span>`;
+                    else if (daysSince <= 5) ageLabel = `<span class="age-medium">⏱ ${daysSince}د</span>`;
+                    else ageLabel = `<span class="age-late">⚠ ${daysSince}د</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `merchant-card${isLate ? ' is-late' : ''}${isZero ? ' zero-debt' : ''}`;
+                card.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px">
+                        <button onclick="merchantAction('${name}','collect')" class="merchant-action-btn btn-collect">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <div style="flex:1; text-align:center; cursor:pointer" onclick="viewHistory('${name}')">
+                            <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:2px">
+                                <span class="merchant-name">${name}</span>
+                                ${ageLabel}
+                            </div>
+                            <div class="merchant-debt${isZero ? ' zero' : ''}">${isZero ? '✓ مسدد' : num(m.debt)}</div>
+                        </div>
+                        <button onclick="merchantAction('${name}','send')" class="merchant-action-btn btn-send">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                    ${m.debt > 0 ? `<div class="debt-progress"><div class="debt-progress-fill" style="width:${debtRatio}%"></div></div>` : ''}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // ===== OPTIONS HELPERS =====
+        function getWalletOptions() { const opts = {}; for (let w in db.wallets) opts[w] = w; return opts; }
+        function getFullOptions(mode) {
+            const wallets = {}; for (let w in db.wallets) wallets[w] = `📱 ${w}`;
+            if (mode === 'send') return { 'digital': '🖥️ المسطر', 'cash': '💵 الكاش', ...wallets };
+            if (mode === 'collect') return { 'cash': '💵 الكاش', ...wallets, 'digital': '🖥️ المسطر' };
+            if (mode === 'deposit') return { 'cash': '💵 من الكاش', ...wallets };
+            return { 'cash': '💵 من الكاش', 'digital': '🖥️ من المسطر', ...wallets };
+        }
+
+        // ===== ACTIONS =====
         async function actionLiquidate() {
             const wOpts = getWalletOptions();
-            if(Object.keys(wOpts).length === 0) return Swal.fire('تنبيه', 'لا توجد محافظ!', 'warning');
-            const { value: w } = await Swal.fire({ title: 'تسييل من', input: 'select', inputOptions: wOpts });
+            if (Object.keys(wOpts).length === 0) return Swal.fire('تنبيه', 'لا توجد محافظ!', 'warning');
+            const { value: w } = await Swal.fire({ title: 'تسييل من أي محفظة؟', input: 'select', inputOptions: wOpts });
             if (!w) return;
-            const { value: a } = await Swal.fire({ title: 'الكاش المستلم', input: 'number' });
+            const { value: a } = await Swal.fire({ title: 'الكاش المستلم', input: 'number', inputAttributes: { placeholder: 'أدخل المبلغ' } });
             if (!a) return;
-            const { value: f } = await Swal.fire({ title: 'عمولة خصم', input: 'number', inputValue: 0 });
-            const total = parseFloat(a) + parseFloat(f||0);
-            if(db.wallets[w] < total) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
-            if(await confirm(`تسييل ${a} من ${w}؟`)) { db.wallets[w] -= total; db.cash += parseFloat(a); save(); Swal.fire('تم', '', 'success'); }
+            const { value: f } = await Swal.fire({ title: 'عمولة الخصم (اختياري)', input: 'number', inputValue: 0 });
+            const total = parseFloat(a) + parseFloat(f || 0);
+            if (db.wallets[w] < total) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
+            if (await confirm(`تسييل ${num(a)} ج.م من ${w}؟`)) {
+                db.wallets[w] -= total; db.cash += parseFloat(a); save();
+                Swal.fire({ icon: 'success', title: 'تم التسييل', timer: 1500, showConfirmButton: false });
+            }
         }
 
         async function actionDeposit() {
             const { value: src } = await Swal.fire({ title: 'إيداع للمسطر من', input: 'select', inputOptions: getFullOptions('deposit') });
-            if(!src) return;
+            if (!src) return;
             const { value: amt } = await Swal.fire({ title: 'المبلغ', input: 'number' });
-            if(!amt) return;
+            if (!amt) return;
             const v = parseFloat(amt);
             const bal = src === 'cash' ? db.cash : db.wallets[src];
-            if(bal < v) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
-            if(await confirm('تأكيد الإيداع؟')) { if(src === 'cash') db.cash -= v; else db.wallets[src] -= v; db.digital += v; save(); Swal.fire('تم', '', 'success'); }
+            if (bal < v) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
+            if (await confirm('تأكيد الإيداع؟')) {
+                if (src === 'cash') db.cash -= v; else db.wallets[src] -= v;
+                db.digital += v; 
+                // NEW: Log Digital Deposit
+                logDigital('إيداع', `إيداع من ${src === 'cash' ? 'الكاش' : src}`, v);
+                save();
+                Swal.fire({ icon: 'success', title: 'تم الإيداع', timer: 1500, showConfirmButton: false });
+            }
         }
 
         async function merchantAction(name, type) {
             const isSend = type === 'send';
-            const { value: amt } = await Swal.fire({ title: isSend ? `إرسال لـ ${name}` : `تحصيل من ${name}`, input: 'number' });
-            if(!amt) return;
+            const { value: amt } = await Swal.fire({
+                title: isSend ? `📤 إرسال لـ ${name}` : `📥 تحصيل من ${name}`,
+                input: 'number',
+                inputAttributes: { placeholder: 'أدخل المبلغ', min: 1 }
+            });
+            if (!amt) return;
             const v = parseFloat(amt);
-            const { value: src } = await Swal.fire({ title: isSend ? 'خصم من' : 'إيداع في', input: 'select', inputOptions: getFullOptions(isSend ? 'send' : 'collect') });
-            if(!src) return;
-            if(isSend) {
+            const { value: src } = await Swal.fire({
+                title: isSend ? '📤 خصم من' : '📥 إيداع في',
+                input: 'select',
+                inputOptions: getFullOptions(isSend ? 'send' : 'collect')
+            });
+            if (!src) return;
+            if (isSend) {
                 let bal = src === 'digital' ? db.digital : (src === 'cash' ? db.cash : db.wallets[src]);
-                if(bal < v) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
+                if (bal < v) return Swal.fire('خطأ', 'الرصيد لا يكفي', 'error');
             }
-            if(await confirm('هل أنت متأكد؟')) {
-                if(isSend) {
-                    if(src === 'digital') db.digital -= v; else if(src === 'cash') db.cash -= v; else db.wallets[src] -= v;
+            if (await confirm('هل أنت متأكد؟')) {
+                if (isSend) {
+                    if (src === 'digital') {
+                        db.digital -= v; 
+                        // NEW: Log Digital Send
+                        logDigital('تحويل', `إرسال لـ ${name}`, v);
+                    } 
+                    else if (src === 'cash') db.cash -= v; else db.wallets[src] -= v;
                     db.merchants[name].debt += v; log(name, `إرسال (${src})`, v);
                 } else {
-                    if(src === 'digital') db.digital += v; else if(src === 'cash') db.cash += v; else db.wallets[src] += v;
+                    if (src === 'digital') {
+                         db.digital += v; 
+                         logDigital('استرداد', `استرداد من ${name}`, v);
+                    } 
+                    else if (src === 'cash') db.cash += v; else db.wallets[src] += v;
                     db.merchants[name].debt -= v; log(name, `تحصيل (${src})`, v);
                 }
-                db.merchants[name].lastUpdate = Date.now(); save(); Swal.fire('تم', '', 'success');
+                db.merchants[name].lastUpdate = Date.now(); save();
+                Swal.fire({ icon: 'success', title: 'تمت العملية', timer: 1200, showConfirmButton: false });
             }
         }
 
         async function addNewMerchant() {
-            const { value: n } = await Swal.fire({ title: 'اسم التاجر الجديد', input: 'text' });
-            if(n && !db.merchants[n.trim()]) { db.merchants[n.trim()] = { debt: 0, history: [], lastUpdate: Date.now() }; save(); Swal.fire('تمت الإضافة', '', 'success'); }
+            const { value: n } = await Swal.fire({
+                title: '➕ تاجر جديد',
+                input: 'text',
+                inputAttributes: { placeholder: 'اسم التاجر' },
+                confirmButtonText: 'إضافة',
+                confirmButtonColor: '#3b82f6'
+            });
+            if (n && n.trim()) {
+                if (db.merchants[n.trim()]) return Swal.fire('تنبيه', 'هذا التاجر موجود بالفعل', 'warning');
+                db.merchants[n.trim()] = { debt: 0, history: [], lastUpdate: Date.now() };
+                save();
+                Swal.fire({ icon: 'success', title: 'تمت الإضافة', timer: 1200, showConfirmButton: false });
+            }
         }
 
         async function showEditMenu() {
-            const { value: mode } = await Swal.fire({ title: 'تعديل الأرصدة', input: 'select', inputOptions: { 'cap': '💎 رأس المال', 'dig': '🖥️ المسطر', 'cash': '💵 النقدية', 'wal': '📱 المحافظ' } });
-            if(mode === 'cap') editVal('capital'); else if(mode === 'dig') editVal('digital'); else if(mode === 'cash') editVal('cash'); else if(mode === 'wal') editWallets();
+            const { value: mode } = await Swal.fire({
+                title: '✏️ تعديل الأرصدة',
+                input: 'select',
+                inputOptions: { 'cap': '💎 رأس المال', 'dig': '🖥️ المسطر', 'cash': '💵 النقدية', 'wal': '📱 المحافظ', 'merDebt': '👤 تعديل مديونية تاجر' }
+            });
+            if (mode === 'cap') editVal('capital');
+            else if (mode === 'dig') editVal('digital');
+            else if (mode === 'cash') editVal('cash');
+            else if (mode === 'wal') editWallets();
+            else if (mode === 'merDebt') editMerchantDebt();
         }
 
         async function editVal(key) {
-            const { value: n } = await Swal.fire({ title: 'القيمة الجديدة', input: 'number', inputValue: db[key] });
-            if(n) { db[key] = parseFloat(n); save(); }
+            const labels = { capital: 'رأس المال', digital: 'المسطر', cash: 'النقدية' };
+            const { value: n } = await Swal.fire({
+                title: `تعديل ${labels[key]}`,
+                input: 'number',
+                inputValue: db[key],
+                confirmButtonText: 'حفظ'
+            });
+            if (n !== undefined && n !== '') { db[key] = parseFloat(n); save(); }
         }
 
         async function editWallets() {
-            const opts = getWalletOptions(); opts['NEW'] = '+ إضافة محفظة جديدة';
+            const opts = getWalletOptions(); opts['NEW'] = '➕ إضافة محفظة جديدة';
             const { value: w } = await Swal.fire({ title: 'اختر المحفظة', input: 'select', inputOptions: opts });
-            if(w === 'NEW') {
-                const { value: nm } = await Swal.fire({ title: 'اسم المحفظة', input: 'text' });
-                if(nm) { db.wallets[nm] = 0; save(); }
-            } else if(w) {
+            if (w === 'NEW') {
+                const { value: nm } = await Swal.fire({ title: 'اسم المحفظة الجديدة', input: 'text' });
+                if (nm) { db.wallets[nm] = 0; save(); }
+            } else if (w) {
                 const { value: v } = await Swal.fire({ title: `رصيد ${w}`, input: 'number', inputValue: db.wallets[w] });
-                if(v) { db.wallets[w] = parseFloat(v); save(); }
+                if (v !== undefined && v !== '') { db.wallets[w] = parseFloat(v); save(); }
+            }
+        }
+
+        async function editMerchantDebt() {
+            const opts = {};
+            Object.keys(db.merchants).forEach(m => opts[m] = `${m} (${num(db.merchants[m].debt)})`);
+            if (Object.keys(opts).length === 0) return Swal.fire('تنبيه', 'لا يوجد تجار', 'warning');
+            const { value: name } = await Swal.fire({ title: 'اختر التاجر', input: 'select', inputOptions: opts });
+            if (!name) return;
+            const { value: v } = await Swal.fire({ title: `مديونية ${name}`, input: 'number', inputValue: db.merchants[name].debt });
+            if (v !== undefined && v !== '') {
+                db.merchants[name].debt = parseFloat(v);
+                db.merchants[name].lastUpdate = Date.now();
+                log(name, 'تعديل يدوي', parseFloat(v));
+                save();
             }
         }
 
         function showWalletDetails() {
-            let h = '<div class="text-right space-y-2">';
-            for(let w in db.wallets) h += `<div class="flex justify-between border-b border-slate-700 pb-1"><span>${w}</span><span class="font-bold">${num(db.wallets[w])}</span></div>`;
-            h += '</div>'; Swal.fire({ title: 'تفاصيل المحافظ', html: h });
-        }
-
-        function renderMerchants() {
-            const list = document.getElementById('merchant-list');
-            const search = document.getElementById('merchantSearch').value.toLowerCase();
-            list.innerHTML = '';
-            Object.keys(db.merchants).sort((a,b) => db.merchants[b].debt - db.merchants[a].debt).forEach(name => {
-                if(name.toLowerCase().includes(search)) {
-                    const m = db.merchants[name];
-                    // تحديد التاجر المتأخر لتلوين البطاقة
-                    const isLate = lateMerchants.some(lm => lm.name === name);
-                    
-                    list.innerHTML += `
-                    <div class="card flex justify-between items-center p-3 ${isLate ? 'border-rose-500/50 bg-rose-900/10' : ''}">
-                        <button onclick="merchantAction('${name}','collect')" class="bg-emerald-500/10 text-emerald-500 w-10 h-10 rounded-lg"><i class="fas fa-plus"></i></button>
-                        <div class="text-center flex-1" onclick="viewHistory('${name}')">
-                            <div class="font-bold text-sm ${isLate ? 'text-rose-300' : 'text-slate-200'}">${name} ${isLate ? '<i class="fas fa-clock text-[10px] mr-1"></i>' : ''}</div>
-                            <div class="text-rose-400 font-bold" dir="ltr">${num(m.debt)}</div>
-                        </div>
-                        <button onclick="merchantAction('${name}','send')" class="bg-rose-500/10 text-rose-500 w-10 h-10 rounded-lg"><i class="fas fa-minus"></i></button>
-                    </div>`;
-                }
-            });
-        }
-
-        async function openSettings() {
-            const { value: o } = await Swal.fire({ 
-                title: 'الإعدادات', 
-                input: 'select', 
-                inputOptions: { 'diag': '🛠️ فحص وصيانة النظام', 'bk': '📥 تصدير نسخة', 'rs': '📤 استعادة نسخة', 'del': '🗑️ حذف تاجر', 'logout': '🚪 خروج' } 
-            });
-            
-            if(o === 'diag') runDiagnostics();
-            else if(o === 'bk') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(db)], {type: 'application/json'})); a.download = `Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
-            else if(o === 'rs') { const i = document.createElement('input'); i.type = 'file'; i.onchange = e => { const r = new FileReader(); r.onload = ev => { db = JSON.parse(ev.target.result); save(); Swal.fire('تم'); }; r.readAsText(e.target.files[0]); }; i.click(); }
-            else if(o === 'del') {
-                const opts = {}; Object.keys(db.merchants).forEach(m => opts[m] = m);
-                const { value: m } = await Swal.fire({ title: 'اختر التاجر للحذف', input: 'select', inputOptions: opts });
-                if(m) {
-                    if(db.merchants[m].debt > 0) return Swal.fire('خطأ', 'لا يمكن حذف تاجر عليه مديونية!', 'error');
-                    const { value: p } = await Swal.fire({ title: 'كلمة السر (1234)', input: 'password' });
-                    if(p === '1234') { delete db.merchants[m]; save(); Swal.fire('تم الحذف', '', 'success'); } else Swal.fire('كلمة السر خطأ');
-                }
-            } else if(o === 'logout') { auth.signOut(); }
-        }
-
-        // --- نظام التشخيص المتقدم والتحكم ---
-        async function runDiagnostics() {
-            Swal.fire({ title: 'جاري فحص النظام...', didOpen: () => { Swal.showLoading(); } });
-
-            let ping = 'غير متصل (Local Mode)';
-            let pingColor = 'text-rose-500';
-            const timeout = new Promise((_, reject) => setTimeout(() => reject("Timeout"), 3000));
-            const testWrite = dbRef.child('_diagnostics_ping').set(Date.now());
-
-            try {
-                const start = Date.now();
-                await Promise.race([testWrite, timeout]);
-                const end = Date.now();
-                const latency = end - start;
-                ping = `${latency} ms`;
-                pingColor = 'text-emerald-400';
-            } catch (e) {
-                ping = "وضع أوفلاين (مخزن محلياً)";
-                pingColor = 'text-orange-400';
-            }
-
-            let totalBytes = 0;
-            for(let x in localStorage) { if(localStorage.hasOwnProperty(x)) totalBytes += ((localStorage[x].length + x.length) * 2); }
-            const usedKB = (totalBytes / 1024).toFixed(2);
-            const percent = Math.min((totalBytes / (5 * 1024 * 1024)) * 100, 100).toFixed(1);
-
-            const html = `
-                <div class="text-right space-y-4 text-sm">
-                    <div class="flex justify-between border-b border-slate-700 pb-2">
-                        <span>📡 حالة السيرفر:</span>
-                        <span class="${pingColor} font-bold" dir="ltr">${ping}</span>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-700 pb-2">
-                        <span>💾 الذاكرة المستخدمة:</span>
-                        <span class="text-blue-400 font-bold" dir="ltr">${usedKB} KB</span>
-                    </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percent}%"></div></div>
-                    
-                    <div class="grid grid-cols-2 gap-2 mt-4">
-                        <button onclick="wipeLocalData()" class="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg text-xs font-bold transition">🗑️ مسح الذاكرة المحلية</button>
-                        <button onclick="wipeServerData()" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg text-xs font-bold transition">🔥 تصفير السيرفر (Google)</button>
-                    </div>
+            let h = '<div style="text-align:right">';
+            let total = 0;
+            for (let w in db.wallets) {
+                const v = db.wallets[w];
+                total += v;
+                h += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #1e3452">
+                    <span style="color:#94a3b8; font-size:13px">📱 ${w}</span>
+                    <span style="font-weight:800; color:white; font-size:14px">${num(v)}</span>
                 </div>`;
-
-            Swal.fire({
-                title: 'لوحة التحكم والصيانة',
-                html: html,
-                showConfirmButton: false,
-                showCloseButton: true
-            });
-        }
-
-        async function wipeLocalData() {
-            const { value: pass } = await Swal.fire({
-                title: 'تأكيد مسح المحلي',
-                text: 'سيتم حذف البيانات من المتصفح فقط.',
-                input: 'password',
-                inputPlaceholder: 'كلمة السر: 1122334455',
-                showCancelButton: true,
-                confirmButtonText: 'تنفيذ',
-                confirmButtonColor: '#f97316'
-            });
-
-            if (pass === '1122334455') {
-                localStorage.removeItem(LOCAL_KEY);
-                location.reload();
-            } else if (pass) {
-                Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
             }
-        }
-
-        async function wipeServerData() {
-            if(!isOnline) return Swal.fire('تنبيه', 'يجب أن تكون متصلاً بالإنترنت لتصفير السيرفر', 'warning');
-            
-            const { value: pass } = await Swal.fire({
-                title: 'تصفير السيرفر نهائياً',
-                text: 'تحذير: سيتم حذف كافة البيانات من السحابة والبدء من الصفر!',
-                input: 'password',
-                inputPlaceholder: 'كلمة السر: 1122334455',
-                showCancelButton: true,
-                confirmButtonText: 'تدمير البيانات',
-                confirmButtonColor: '#dc2626'
-            });
-
-            if (pass === '1122334455') {
-                const initialDB = { capital: 0, digital: 0, cash: 0, wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 }, merchants: {} };
-                dbRef.set(initialDB)
-                    .then(() => {
-                        localStorage.setItem(LOCAL_KEY, JSON.stringify(initialDB));
-                        db = initialDB;
-                        updateUI();
-                        Swal.fire('تم', 'تم تصفير السيرفر بنجاح', 'success');
-                    })
-                    .catch(() => Swal.fire('خطأ', 'فشل في الاتصال', 'error'));
-            } else if (pass) {
-                Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
-            }
-        }
-
-        async function actionWithdraw() {
-            const { value: s } = await Swal.fire({ title: 'سحب مصاريف من', input: 'select', inputOptions: getFullOptions('withdraw') });
-            if(!s) return;
-            const { value: a } = await Swal.fire({ input: 'number' });
-            if(!a) return;
-            if(await confirm('تأكيد السحب؟')) { const v = parseFloat(a); if(s === 'cash') db.cash -= v; else if(s === 'digital') db.digital -= v; else db.wallets[s] -= v; save(); Swal.fire('تم'); }
+            h += `<div style="display:flex; justify-content:space-between; padding-top:10px">
+                <span style="color:#60a5fa; font-weight:700">الإجمالي</span>
+                <span style="color:#60a5fa; font-weight:900; font-size:16px">${num(total)}</span>
+            </div></div>`;
+            Swal.fire({ title: '📱 تفاصيل المحافظ', html: h, confirmButtonColor: '#3b82f6' });
         }
 
         function viewHistory(n) {
-            let h = '<div class="max-h-60 overflow-y-auto space-y-2 text-xs">';
-            (db.merchants[n].history || []).slice().reverse().forEach(x => { h += `<div class="flex justify-between border-b border-slate-700 pb-1"><span>${x.t} (${num(x.a)})</span><span class="text-slate-500">${x.d.split(',')[0]}</span></div>`; });
-            Swal.fire({ title: `سجل ${n}`, html: h + '</div>' });
+            const history = (db.merchants[n].history || []).slice().reverse();
+            let h = `<div style="max-height:280px; overflow-y:auto; text-align:right">`;
+            if (history.length === 0) {
+                h += '<div style="color:#475569; text-align:center; padding:20px">لا يوجد سجل بعد</div>';
+            } else {
+                history.forEach(x => {
+                    const isIn = x.t.includes('تحصيل');
+                    h += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #1e3452; font-size:12px">
+                        <div>
+                            <span style="color:${isIn ? '#34d399' : '#f87171'}; font-weight:700">${x.t}</span>
+                            <span style="color:#475569; font-weight:700"> (${num(x.a)})</span>
+                        </div>
+                        <span style="color:#334155; font-size:10px">${x.d.split(',')[0]}</span>
+                    </div>`;
+                });
+            }
+            h += '</div>';
+            Swal.fire({ title: `📋 سجل ${n}`, html: h, confirmButtonColor: '#3b82f6' });
+        }
+
+        // ===== NEW DIGITAL HISTORY FUNCTIONS =====
+        function logDigital(type, desc, amount) {
+            if (!db.digitalHistory) db.digitalHistory = [];
+            db.digitalHistory.push({
+                type: type,
+                desc: desc,
+                amount: amount,
+                date: new Date().toLocaleString('en-US')
+            });
+            if (db.digitalHistory.length > 100) db.digitalHistory.shift();
+        }
+
+        function showDigitalHistory() {
+            const history = (db.digitalHistory || []).slice().reverse();
+            let h = `<div style="max-height:280px; overflow-y:auto; text-align:right">`;
+            if (history.length === 0) {
+                h += '<div style="color:#475569; text-align:center; padding:20px">لا يوجد سجل عمليات مسطر بعد</div>';
+            } else {
+                history.forEach(x => {
+                    const isDeposit = x.type === 'إيداع' || x.type === 'استرداد';
+                    h += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #1e3452; font-size:12px">
+                        <div>
+                            <span style="color:${isDeposit ? '#34d399' : '#f87171'}; font-weight:700">${x.desc}</span>
+                        </div>
+                        <div style="text-align:left">
+                             <span style="color:white; font-weight:800; display:block">${num(x.amount)}</span>
+                             <span style="color:#334155; font-size:9px">${x.date.split(',')[0]}</span>
+                        </div>
+                    </div>`;
+                });
+            }
+            h += '</div>';
+            Swal.fire({ title: `🖥️ سجل المسطر (آخر 100)`, html: h, confirmButtonColor: '#3b82f6' });
         }
 
         function log(n, t, a) {
-            if(!db.merchants[n].history) db.merchants[n].history = [];
-            db.merchants[n].history.push({ t, a, d: new Date().toLocaleString('ar-EG') });
-            if(db.merchants[n].history.length > 30) db.merchants[n].history.shift();
+            if (!db.merchants[n].history) db.merchants[n].history = [];
+            db.merchants[n].history.push({ t, a, d: new Date().toLocaleString('en-US') });
+            if (db.merchants[n].history.length > 50) db.merchants[n].history.shift();
         }
 
-        async function confirm(m) { return (await Swal.fire({ title: m, icon: 'question', showCancelButton: true, confirmButtonText: 'نعم' })).isConfirmed; }
+        async function actionWithdraw() {
+            const { value: s } = await Swal.fire({ title: '💸 سحب مصاريف من', input: 'select', inputOptions: getFullOptions('withdraw') });
+            if (!s) return;
+            const { value: a } = await Swal.fire({ title: 'المبلغ', input: 'number' });
+            if (!a) return;
+            if (await confirm('تأكيد سحب المصاريف؟')) {
+                const v = parseFloat(a);
+                if (s === 'cash') db.cash -= v;
+                else if (s === 'digital') db.digital -= v;
+                else db.wallets[s] -= v;
+                save();
+                Swal.fire({ icon: 'success', title: 'تم السحب', timer: 1200, showConfirmButton: false });
+            }
+        }
+
+        async function openSettings() {
+            const { value: o } = await Swal.fire({
+                title: '⚙️ الإعدادات',
+                input: 'select',
+                inputOptions: { 'diag': '🛠️ فحص وصيانة النظام', 'bk': '📥 تصدير نسخة احتياطية', 'rs': '📤 استعادة نسخة', 'del': '🗑️ حذف تاجر', 'logout': '🚪 تسجيل الخروج' }
+            });
+            if (o === 'diag') runDiagnostics();
+            else if (o === 'bk') {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }));
+                a.download = `Backup_${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+            }
+            else if (o === 'rs') {
+                const i = document.createElement('input'); i.type = 'file';
+                i.onchange = e => {
+                    const r = new FileReader();
+                    r.onload = ev => { db = JSON.parse(ev.target.result); save(); Swal.fire({ icon: 'success', title: 'تم الاستعادة' }); };
+                    r.readAsText(e.target.files[0]);
+                };
+                i.click();
+            }
+            else if (o === 'del') {
+                const opts = {}; Object.keys(db.merchants).forEach(m => opts[m] = m);
+                if (Object.keys(opts).length === 0) return Swal.fire('تنبيه', 'لا يوجد تجار', 'warning');
+                const { value: m } = await Swal.fire({ title: 'اختر التاجر للحذف', input: 'select', inputOptions: opts });
+                if (m) {
+                    if (db.merchants[m].debt > 0) return Swal.fire('خطأ', 'لا يمكن حذف تاجر عليه مديونية!', 'error');
+                    const { value: p } = await Swal.fire({ title: 'كلمة السر للتأكيد', input: 'password' });
+                    if (p === '1234') {
+                        delete db.merchants[m]; save();
+                        Swal.fire({ icon: 'success', title: 'تم الحذف', timer: 1200, showConfirmButton: false });
+                    } else if (p) Swal.fire('خطأ', 'كلمة السر غير صحيحة', 'error');
+                }
+            }
+            else if (o === 'logout') auth.signOut();
+        }
+
+        async function runDiagnostics() {
+            Swal.fire({ title: 'جاري فحص النظام...', didOpen: () => Swal.showLoading() });
+            let ping = 'غير متصل'; let pingColor = '#f43f5e';
+            try {
+                const start = Date.now();
+                await Promise.race([dbRef.child('_ping').set(Date.now()), new Promise((_, r) => setTimeout(() => r(), 3000))]);
+                ping = `${Date.now() - start} ms`; pingColor = '#10b981';
+            } catch (e) { ping = 'وضع أوفلاين'; pingColor = '#f59e0b'; }
+
+            let totalBytes = 0;
+            for (let x in localStorage) { if (localStorage.hasOwnProperty(x)) totalBytes += (localStorage[x].length + x.length) * 2; }
+            const usedKB = (totalBytes / 1024).toFixed(1);
+            const percent = Math.min((totalBytes / (5 * 1024 * 1024)) * 100, 100).toFixed(1);
+
+            const html = `<div style="text-align:right; font-size:13px; line-height:2">
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #1e3452; padding-bottom:8px; margin-bottom:8px">
+                    <span style="color:#94a3b8">📡 حالة الاتصال:</span>
+                    <span style="color:${pingColor}; font-weight:700" dir="ltr">${ping}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #1e3452; padding-bottom:8px; margin-bottom:12px">
+                    <span style="color:#94a3b8">💾 الذاكرة:</span>
+                    <span style="color:#60a5fa; font-weight:700">${usedKB} KB (${percent}%)</span>
+                </div>
+                <div style="background:#1e3452; height:6px; border-radius:6px; margin-bottom:16px">
+                    <div style="background:linear-gradient(90deg,#3b82f6,#06b6d4); height:100%; width:${percent}%; border-radius:6px; transition:width 0.5s"></div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+                    <button onclick="wipeLocalData()" style="background:#f97316; color:white; padding:10px; border-radius:10px; font-family:Cairo,sans-serif; font-size:12px; font-weight:700; cursor:pointer; border:none">🗑️ مسح محلي</button>
+                    <button onclick="wipeServerData()" style="background:#dc2626; color:white; padding:10px; border-radius:10px; font-family:Cairo,sans-serif; font-size:12px; font-weight:700; cursor:pointer; border:none">🔥 تصفير السيرفر</button>
+                </div>
+            </div>`;
+
+            Swal.fire({ title: '🛠️ لوحة الصيانة', html, showConfirmButton: false, showCloseButton: true });
+        }
+
+        async function wipeLocalData() {
+            const { value: pass } = await Swal.fire({ title: 'تأكيد المسح', input: 'password', inputPlaceholder: 'كلمة السر: 1122334455', showCancelButton: true, confirmButtonText: 'تنفيذ', confirmButtonColor: '#f97316' });
+            if (pass === '1122334455') { localStorage.removeItem(LOCAL_KEY); location.reload(); }
+            else if (pass) Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
+        }
+
+        async function wipeServerData() {
+            if (!isOnline) return Swal.fire('تنبيه', 'يجب أن تكون متصلاً', 'warning');
+            const { value: pass } = await Swal.fire({ title: '⚠️ تصفير السيرفر نهائياً', input: 'password', inputPlaceholder: 'كلمة السر: 1122334455', showCancelButton: true, confirmButtonText: 'تدمير البيانات', confirmButtonColor: '#dc2626' });
+            if (pass === '1122334455') {
+                const init = { capital: 0, digital: 0, cash: 0, wallets: { "فودافون": 0, "اتصالات": 0, "أورانج": 0, "انستاباي": 0 }, merchants: {} };
+                dbRef.set(init).then(() => { db = init; localStorage.setItem(LOCAL_KEY, JSON.stringify(init)); updateUI(); Swal.fire({ icon: 'success', title: 'تم التصفير' }); });
+            } else if (pass) Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
+        }
+
+        async function confirm(m) {
+            return (await Swal.fire({ title: m, icon: 'question', showCancelButton: true, confirmButtonText: 'نعم', cancelButtonText: 'إلغاء', confirmButtonColor: '#3b82f6' })).isConfirmed;
+        }
     </script>
 </body>
 </html>
