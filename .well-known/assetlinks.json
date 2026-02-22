@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.ahmedpro.app",
+    "sha256_cert_fingerprints": [
+      "A1:B1:EC:05:69:CB:B5:EC:1A:2D:80:5C:A8:46:17:62:C8:EA:FC:D3:92:92:DE:93:DB:35:DD:78:67:92:7F:18"
+    ]
+  }
+}]
