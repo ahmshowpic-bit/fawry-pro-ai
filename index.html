@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#070d1a">
     <title>Ahmed PRO - النظام المالي</title>
 
     <link rel="manifest" href="./manifest.json">
@@ -48,6 +49,19 @@
             background-image:
                 radial-gradient(ellipse at 20% 10%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+            /* منع تحديد النصوص - Native App Feel */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* السماح بالكتابة في حقول الإدخال */
+        input,
+        textarea {
+            -webkit-user-select: auto;
+            user-select: auto;
         }
 
         /* ===== LOGIN SCREEN ===== */
